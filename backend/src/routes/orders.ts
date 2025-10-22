@@ -140,7 +140,7 @@ router.post('/',
         status,
         notes: orderData.notes || '',
         deviceId: orderData.deviceId || 'device-001',
-        userId: req.user.userId
+        userId: req.user.id
       });
       
       const savedOrder = await newOrder.save();
