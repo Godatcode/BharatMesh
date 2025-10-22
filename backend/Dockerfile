@@ -1,30 +1,22 @@
-# Backend Dockerfile
-FROM node:20-alpine AS base
+# Backend Dockerfile for Render
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies
+# Copy package files
 COPY package*.json ./
+
+# Install dependencies
 RUN npm ci --only=production
 
-# Copy shared types
-COPY ../shared ./shared
+# Copy shared types (if available)
+COPY shared ./shared 2>/dev/null || echo "Shared directory not found, continuing..."
 
 # Copy backend source
 COPY . .
 
 # Build TypeScript
 RUN npm run build
-
-# Production stage
-FROM node:20-alpine
-
-WORKDIR /app
-
-# Copy built files and dependencies
-COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/dist ./dist
-COPY --from=base /app/package.json ./
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -39,4 +31,3 @@ USER nodejs
 EXPOSE 5000 6000
 
 CMD ["node", "dist/server.js"]
-
