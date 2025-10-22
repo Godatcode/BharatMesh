@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import mongoose from 'mongoose';
 import { config } from './config';
 import logger from './utils/logger';
 import { connectDatabase } from './database';
@@ -82,8 +83,22 @@ app.get('/health', (req, res) => {
       status: 'ok',
       timestamp: Date.now(),
       uptime: process.uptime(),
-      env: config.server.env
+      env: config.server.env,
+      mongoUri: config.database.mongoUri ? 'set' : 'not set',
+      port: config.server.port,
+      host: config.server.host,
+      mongoConnected: mongoose.connection.readyState === 1
     }
+  });
+});
+
+// Simple startup check
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'BharatMesh API Server',
+    version: '1.0.0',
+    status: 'running'
   });
 });
 
@@ -212,7 +227,15 @@ process.on('SIGINT', shutdown);
 // Start server
 async function startServer() {
   try {
+    logger.info('🚀 Starting BharatMesh Server...', {
+      env: config.server.env,
+      port: config.server.port,
+      host: config.server.host,
+      mongoUri: config.database.mongoUri ? 'configured' : 'not configured'
+    });
+
     // Connect to MongoDB
+    logger.info('📡 Connecting to MongoDB...');
     await connectDatabase();
     
     // Start HTTP server
@@ -227,7 +250,11 @@ async function startServer() {
       logger.info(`🔌 Socket.io: ws://${config.server.host}:${config.server.port}`);
     });
   } catch (error) {
-    logger.error('Failed to start server:', error);
+    logger.error('❌ Failed to start server:', error);
+    logger.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     process.exit(1);
   }
 }
