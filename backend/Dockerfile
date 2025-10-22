@@ -9,8 +9,8 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --only=production
 
-# Copy shared types (if available)
-COPY shared ./shared 2>/dev/null || echo "Shared directory not found, continuing..."
+# Copy shared types
+COPY shared ./shared
 
 # Copy backend source
 COPY . .
