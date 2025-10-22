@@ -122,14 +122,14 @@ export function requirePermission(module: string, action: 'read' | 'create' | 'u
     const rolePerms = RolePermissions[req.user.role];
     
     // Check wildcard permission
-    const wildcardPerm = rolePerms.find(p => p.module === '*');
+    const wildcardPerm = rolePerms.find((p: any) => p.module === '*');
     if (wildcardPerm && wildcardPerm.actions.includes(action)) {
       next();
       return;
     }
     
     // Check specific module permission
-    const modulePerm = rolePerms.find(p => p.module === module);
+    const modulePerm = rolePerms.find((p: any) => p.module === module);
     if (modulePerm && modulePerm.actions.includes(action)) {
       next();
       return;

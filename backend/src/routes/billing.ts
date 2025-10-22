@@ -239,7 +239,7 @@ router.get('/stats',
       // Top products
       const productCounts: Record<string, { name: string; qty: number }> = {};
       todayInvoices.forEach(inv => {
-        inv.items.forEach(item => {
+        inv.items.forEach((item: any) => {
           if (!productCounts[item.productId]) {
             productCounts[item.productId] = { name: item.name, qty: 0 };
           }
