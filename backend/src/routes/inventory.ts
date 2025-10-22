@@ -267,8 +267,8 @@ router.get('/alerts',
       
       const expiryAlerts = expiringProducts.flatMap(product => 
         product.batches
-          .filter(batch => batch.expiry && batch.expiry <= expiryThresholdISO)
-          .map(batch => ({
+          .filter((batch: any) => batch.expiry && batch.expiry <= expiryThresholdISO)
+          .map((batch: any) => ({
             productId: product._id,
             name: product.name,
             expiry: batch.expiry,

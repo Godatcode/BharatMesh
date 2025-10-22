@@ -6,14 +6,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including dev dependencies for build)
-RUN npm install
-
-# Copy shared types
+# Copy shared types first
 COPY shared ./shared
 
 # Copy backend source
 COPY . .
+
+# Install all dependencies (including dev dependencies for build)
+RUN npm install
 
 # Build TypeScript
 RUN npm run build
