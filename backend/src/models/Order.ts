@@ -26,7 +26,7 @@ const OrderSchema = new Schema<IOrder>({
   customer: {
     phone: {
       type: String,
-      required: true
+      required: false
     },
     name: {
       type: String,
