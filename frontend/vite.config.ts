@@ -112,7 +112,7 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'mui-vendor': ['@mui/material', '@mui/icons-material'],
-          'db-vendor': ['dexie', 'pouchdb'],
+          'db-vendor': ['dexie'],
           'i18n-vendor': ['i18next', 'react-i18next']
         }
       }

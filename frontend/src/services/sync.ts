@@ -6,7 +6,7 @@ import { io, Socket } from 'socket.io-client';
 import { db } from './db';
 import type { SyncOperation } from '@bharatmesh/shared';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5001';
+const SOCKET_URL = (import.meta as any).env?.VITE_SOCKET_URL || 'http://localhost:5001';
 
 class SyncService {
   private socket: Socket | null = null;
