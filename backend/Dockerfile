@@ -10,7 +10,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # Copy shared types (if available)
-COPY shared ./shared 2>/dev/null || echo "Shared directory not found, continuing..."
+COPY shared ./shared
 
 # Copy backend source
 COPY . .
