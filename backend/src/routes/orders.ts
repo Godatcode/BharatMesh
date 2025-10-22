@@ -99,20 +99,45 @@ router.post('/',
     try {
       const orderData = req.body;
       
+      // Handle both frontend format and backend format
+      let customer, lines, subtotal, gst, total, status;
+      
+      if (orderData.customerName) {
+        // Frontend format
+        customer = {
+          phone: orderData.customerPhone || '',
+          name: orderData.customerName || '',
+          address: orderData.customerAddress || ''
+        };
+        lines = orderData.items || [];
+        subtotal = orderData.subtotal || orderData.total || 0;
+        gst = orderData.gst || 0;
+        total = orderData.total || 0;
+        status = orderData.status || 'pending';
+      } else {
+        // Backend format
+        customer = {
+          phone: orderData.customer?.phone || '',
+          name: orderData.customer?.name || '',
+          address: orderData.customer?.address || ''
+        };
+        lines = orderData.lines || [];
+        subtotal = orderData.subtotal || 0;
+        gst = orderData.gst || 0;
+        total = orderData.total || 0;
+        status = orderData.status || 'draft';
+      }
+      
       const newOrder = new OrderModel({
         id: generateId(),
         ts: Date.now(),
-        channel: orderData.channel,
-        customer: {
-          phone: orderData.customer.phone,
-          name: orderData.customer.name || '',
-          address: orderData.customer.address || ''
-        },
-        lines: orderData.lines,
-        subtotal: orderData.subtotal,
-        gst: orderData.gst,
-        total: orderData.total,
-        status: orderData.status || 'draft',
+        channel: orderData.channel || 'web',
+        customer,
+        lines,
+        subtotal,
+        gst,
+        total,
+        status,
         notes: orderData.notes || '',
         deviceId: orderData.deviceId || 'device-001',
         userId: req.user.userId
