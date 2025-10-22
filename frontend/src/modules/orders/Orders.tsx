@@ -293,40 +293,6 @@ const Orders = () => {
     ));
   };
 
-  const getStatusIcon = (status: OrderStatus) => {
-    switch (status) {
-      case 'draft': return <Edit />;
-      case 'confirmed': return <CheckCircle />;
-      case 'preparing': return <AccessTime />;
-      case 'out_for_delivery': return <LocalShipping />;
-      case 'delivered': return <CheckCircle />;
-      case 'cancelled': return <Cancel />;
-      default: return <Edit />;
-    }
-  };
-
-  const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-      case 'draft': return 'default';
-      case 'confirmed': return 'success';
-      case 'preparing': return 'warning';
-      case 'out_for_delivery': return 'info';
-      case 'delivered': return 'success';
-      case 'cancelled': return 'error';
-      default: return 'default';
-    }
-  };
-
-  const getChannelIcon = (channel: OrderChannel) => {
-    switch (channel) {
-      case 'whatsapp': return <WhatsApp />;
-      case 'phone': return <Phone />;
-      case 'counter': return <Store />;
-      case 'web': return <ShoppingCart />;
-      default: return <ShoppingCart />;
-    }
-  };
-
   // Calculate stats
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(o => ['draft', 'confirmed', 'preparing'].includes(o.status)).length;
@@ -749,10 +715,10 @@ const OrderTable: React.FC<{
             </TableRow>
           ) : (
             orders.map((order, index) => (
-              <TableRow key={order.id || order._id || `order-${index}`} hover>
+              <TableRow key={order.id || `order-${index}`} hover>
                 <TableCell>
                   <Typography variant="body2" fontWeight={500}>
-                    {order.id || order._id}
+                    {order.id}
                   </Typography>
                 </TableCell>
                 <TableCell>
