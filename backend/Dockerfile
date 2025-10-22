@@ -9,7 +9,7 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --only=production
 
-# Copy shared types (if available)
+# Copy shared types
 COPY shared ./shared
 
 # Copy backend source
