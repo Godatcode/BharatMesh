@@ -5,7 +5,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import type { ApiResponse } from '@bharatmesh/shared';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5001/api';
 
 class ApiService {
   private client: AxiosInstance;
@@ -197,5 +197,36 @@ export const devicesApi = {
   
   deactivate: (id: string) => 
     api.delete(`/devices/${id}`)
+};
+
+export const ordersApi = {
+  createOrder: (order: any) =>
+    api.post('/orders', order),
+
+  getOrders: (params?: any) =>
+    api.get('/orders', { params }),
+
+  getOrder: (id: string) =>
+    api.get(`/orders/${id}`),
+
+  updateOrder: (id: string, order: any) =>
+    api.put(`/orders/${id}`, order),
+
+  deleteOrder: (id: string) =>
+    api.delete(`/orders/${id}`)
+};
+
+export const attendanceApi = {
+  getAttendance: (params?: any) =>
+    api.get('/attendance', { params }),
+
+  clockIn: (data: any) =>
+    api.post('/attendance/clock-in', data),
+
+  clockOut: (data: any) =>
+    api.post('/attendance/clock-out', data),
+
+  getStats: (params?: any) =>
+    api.get('/attendance/stats', { params })
 };
 

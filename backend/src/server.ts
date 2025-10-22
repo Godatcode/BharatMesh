@@ -13,6 +13,8 @@ import authRoutes from './routes/auth';
 import billingRoutes from './routes/billing';
 import inventoryRoutes from './routes/inventory';
 import devicesRoutes from './routes/devices';
+import ordersRoutes from './routes/orders';
+import attendanceRoutes from './routes/attendance';
 
 // Initialize Express app
 const app = express();
@@ -90,6 +92,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/devices', devicesRoutes);
+app.use('/api/orders', ordersRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // 404 handler
 app.use((req, res) => {

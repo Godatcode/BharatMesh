@@ -19,6 +19,22 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { billingApi, inventoryApi } from '@services/api';
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
 interface StatCardProps {
   title: string;
@@ -68,6 +84,33 @@ const Dashboard = () => {
     lowStockCount: 0,
     pendingPayments: 0
   });
+
+  // Mock chart data
+  const dailySalesData = [
+    { name: 'Mon', sales: 4000, orders: 24 },
+    { name: 'Tue', sales: 3000, orders: 13 },
+    { name: 'Wed', sales: 5000, orders: 28 },
+    { name: 'Thu', sales: 4500, orders: 22 },
+    { name: 'Fri', sales: 6000, orders: 35 },
+    { name: 'Sat', sales: 5500, orders: 31 },
+    { name: 'Sun', sales: 4800, orders: 26 }
+  ];
+
+  const categoryData = [
+    { name: 'Grocery', value: 45, color: '#8884d8' },
+    { name: 'Personal Care', value: 25, color: '#82ca9d' },
+    { name: 'Snacks', value: 20, color: '#ffc658' },
+    { name: 'Beverages', value: 10, color: '#ff7300' }
+  ];
+
+  const monthlyRevenueData = [
+    { month: 'Jan', revenue: 120000 },
+    { month: 'Feb', revenue: 135000 },
+    { month: 'Mar', revenue: 150000 },
+    { month: 'Apr', revenue: 140000 },
+    { month: 'May', revenue: 160000 },
+    { month: 'Jun', revenue: 170000 }
+  ];
 
   useEffect(() => {
     async function loadStats() {
@@ -202,6 +245,97 @@ const Dashboard = () => {
           </Grid>
         </CardContent>
       </Card>
+
+      {/* Charts Section */}
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        {/* Daily Sales Chart */}
+        <Grid item xs={12} md={8}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom fontWeight={600}>
+                Daily Sales Trend
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={dailySalesData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value, name) => [
+                        name === 'sales' ? `₹${value.toLocaleString('en-IN')}` : value,
+                        name === 'sales' ? 'Sales' : 'Orders'
+                      ]}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="sales" 
+                      stroke="#8884d8" 
+                      fill="#8884d8" 
+                      fillOpacity={0.6}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Category Distribution */}
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom fontWeight={600}>
+                Sales by Category
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `${value}%`} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Monthly Revenue Chart */}
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom fontWeight={600}>
+                Monthly Revenue Growth
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyRevenueData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip 
+                      formatter={(value) => [`₹${value.toLocaleString('en-IN')}`, 'Revenue']}
+                    />
+                    <Bar dataKey="revenue" fill="#82ca9d" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Box>
   );
 };

@@ -21,7 +21,7 @@ import Settings from '@modules/settings/Settings';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
-  const { isAuthenticated, user, initialize } = useAuthStore();
+  const { isAuthenticated, initialize } = useAuthStore();
   const { isOnline } = useNetworkStatus();
 
   useEffect(() => {

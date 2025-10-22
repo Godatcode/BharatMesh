@@ -17,7 +17,9 @@ import {
   InputAdornment,
   Grid,
   Dialog,
+  DialogTitle,
   DialogContent,
+  DialogActions,
   IconButton,
   Menu,
   MenuItem,
@@ -26,7 +28,10 @@ import {
   Alert,
   Tabs,
   Tab,
-  Badge
+  Badge,
+  FormControl,
+  InputLabel,
+  Select
 } from '@mui/material';
 import {
   Add,
@@ -81,6 +86,11 @@ const Inventory = () => {
   const [tabValue, setTabValue] = useState(0);
   const [productFormOpen, setProductFormOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
+  const [adjustmentProduct, setAdjustmentProduct] = useState<Product | null>(null);
+  const [adjustmentDelta, setAdjustmentDelta] = useState<number>(0);
+  const [adjustmentReason, setAdjustmentReason] = useState<string>('');
+  const [adjustmentNotes, setAdjustmentNotes] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<InventoryStats>({
@@ -142,8 +152,8 @@ const Inventory = () => {
 
   const saveProductsToLocal = async (products: Product[]) => {
     try {
-      await db.products.clear();
-      await db.products.bulkAdd(products);
+      // Use bulkPut instead of bulkAdd to handle duplicates
+      await db.products.bulkPut(products);
       console.log('💾 Products saved to local storage');
     } catch (err) {
       console.log('⚠️ Failed to save to local storage:', err);
@@ -318,6 +328,42 @@ const Inventory = () => {
     }
   };
 
+  const handleAdjustmentDialogOpen = (product: Product) => {
+    setAdjustmentProduct(product);
+    setAdjustmentDelta(0);
+    setAdjustmentReason('');
+    setAdjustmentNotes('');
+    setAdjustmentDialogOpen(true);
+  };
+
+  const handleAdjustmentSubmit = async () => {
+    if (!adjustmentProduct || adjustmentDelta === 0) return;
+
+    try {
+      const newStock = Math.max(0, adjustmentProduct.stock + adjustmentDelta);
+      const updatedProduct = {
+        ...adjustmentProduct,
+        stock: newStock,
+        updatedAt: Date.now()
+      };
+
+      // Update in backend
+      await inventoryApi.updateProduct(adjustmentProduct.id, updatedProduct);
+      
+      // Update local state
+      setProducts(products.map(p => p.id === adjustmentProduct.id ? updatedProduct : p));
+      
+      // Save to local storage
+      await db.products.put(updatedProduct);
+      
+      setAdjustmentDialogOpen(false);
+      setAdjustmentProduct(null);
+    } catch (err) {
+      console.log('Failed to update stock:', err);
+      setError('Failed to update stock - saved offline');
+    }
+  };
+
   const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
 
   return (
@@ -419,8 +465,22 @@ const Inventory = () => {
       )}
 
       {/* Alerts */}
-      {stats.expiryAlerts.length > 0 && (
+      {stats.lowStockCount > 0 && (
         <Alert severity="warning" sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Low Stock Alert ({stats.lowStockCount} products)
+          </Typography>
+          <Typography variant="body2">
+            {products.filter(p => p.stock <= p.reorderLevel).slice(0, 3).map(p => 
+              `${p.name} (${p.stock} ${p.unit || 'units'})`
+            ).join(', ')}
+            {stats.lowStockCount > 3 && ` ... and ${stats.lowStockCount - 3} more`}
+          </Typography>
+        </Alert>
+      )}
+
+      {stats.expiryAlerts.length > 0 && (
+        <Alert severity="error" sx={{ mb: 3 }}>
           <Typography variant="subtitle2" gutterBottom>
             Expiry Alerts ({stats.expiryAlerts.length})
           </Typography>
@@ -525,6 +585,7 @@ const Inventory = () => {
             onEdit={handleEditProduct}
             onDelete={handleDeleteProduct}
             onAdjustStock={handleStockAdjustment}
+            onOpenAdjustment={handleAdjustmentDialogOpen}
           />
         </TabPanel>
 
@@ -534,6 +595,7 @@ const Inventory = () => {
             onEdit={handleEditProduct}
             onDelete={handleDeleteProduct}
             onAdjustStock={handleStockAdjustment}
+            onOpenAdjustment={handleAdjustmentDialogOpen}
           />
         </TabPanel>
 
@@ -567,6 +629,93 @@ const Inventory = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Stock Adjustment Dialog */}
+      <Dialog
+        open={adjustmentDialogOpen}
+        onClose={() => setAdjustmentDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box display="flex" alignItems="center" gap={1}>
+            <AddBox color="primary" />
+            <Typography variant="h6">Stock Adjustment</Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {adjustmentProduct && (
+            <Box>
+              <Typography variant="subtitle1" gutterBottom>
+                Product: {adjustmentProduct.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Current Stock: {adjustmentProduct.stock} {adjustmentProduct.unit || 'units'}
+              </Typography>
+              
+              <Grid container spacing={2} sx={{ mt: 2 }}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Adjustment Amount"
+                    type="number"
+                    value={adjustmentDelta}
+                    onChange={(e) => setAdjustmentDelta(parseInt(e.target.value) || 0)}
+                    helperText="Positive to add stock, negative to reduce"
+                    inputProps={{ step: 1 }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Reason</InputLabel>
+                    <Select
+                      value={adjustmentReason}
+                      onChange={(e) => setAdjustmentReason(e.target.value)}
+                    >
+                      <MenuItem value="received">Stock Received</MenuItem>
+                      <MenuItem value="sold">Sold</MenuItem>
+                      <MenuItem value="damaged">Damaged</MenuItem>
+                      <MenuItem value="returned">Returned</MenuItem>
+                      <MenuItem value="adjusted">Manual Adjustment</MenuItem>
+                      <MenuItem value="other">Other</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Notes (Optional)"
+                    multiline
+                    rows={2}
+                    value={adjustmentNotes}
+                    onChange={(e) => setAdjustmentNotes(e.target.value)}
+                    placeholder="Additional details about this adjustment..."
+                  />
+                </Grid>
+                {adjustmentDelta !== 0 && (
+                  <Grid item xs={12}>
+                    <Alert severity="info">
+                      New stock will be: {adjustmentProduct.stock + adjustmentDelta} {adjustmentProduct.unit || 'units'}
+                    </Alert>
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAdjustmentDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleAdjustmentSubmit}
+            disabled={adjustmentDelta === 0 || !adjustmentReason}
+          >
+            Apply Adjustment
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
@@ -577,7 +726,8 @@ const ProductTable: React.FC<{
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
   onAdjustStock: (productId: string, delta: number) => void;
-}> = ({ products, onEdit, onDelete, onAdjustStock }) => {
+  onOpenAdjustment: (product: Product) => void;
+}> = ({ products, onEdit, onDelete, onAdjustStock, onOpenAdjustment }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -694,6 +844,13 @@ const ProductTable: React.FC<{
         }}>
           <ListItemIcon><Edit fontSize="small" /></ListItemIcon>
           <ListItemText>Edit</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => {
+          onOpenAdjustment(selectedProduct!);
+          handleMenuClose();
+        }}>
+          <ListItemIcon><AddBox fontSize="small" /></ListItemIcon>
+          <ListItemText>Adjust Stock</ListItemText>
         </MenuItem>
         <MenuItem onClick={() => {
           onAdjustStock(selectedProduct!.id, 10);

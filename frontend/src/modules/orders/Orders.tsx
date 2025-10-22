@@ -48,6 +48,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Order, OrderStatus, OrderChannel } from '@bharatmesh/shared';
 import OrderForm from './OrderForm';
+import { ordersApi } from '@services/api';
+import { db } from '@services/db';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -83,10 +85,75 @@ const Orders = () => {
   const [orderFormOpen, setOrderFormOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load orders on mount
   useEffect(() => {
-    // Mock data - in real app, load from API
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('🔄 Loading orders from API...');
+      
+      // Try to load from API first
+      const response = await ordersApi.getOrders();
+      
+      if (response.success) {
+        console.log('✅ Orders loaded from API:', response.data.length);
+        // Convert _id to id for IndexedDB compatibility
+        const ordersWithId = response.data.map((order: any) => ({
+          ...order,
+          id: order._id || order.id
+        }));
+        setOrders(ordersWithId);
+        setFilteredOrders(ordersWithId);
+        
+        // Save to local storage for offline access
+        await saveOrdersToLocal(ordersWithId);
+      } else {
+        throw new Error(response.error?.message || 'Failed to load orders');
+      }
+    } catch (err) {
+      console.log('⚠️ API failed, loading from local storage:', err);
+      setError('Using offline data - ' + (err as Error).message);
+      
+      // Fallback to local storage
+      await loadOrdersFromLocal();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadOrdersFromLocal = async () => {
+    try {
+      const localOrders = await db.orders.toArray();
+      console.log('📱 Orders loaded from local storage:', localOrders.length);
+      setOrders(localOrders);
+      setFilteredOrders(localOrders);
+    } catch (err) {
+      console.log('❌ Local storage failed, using mock data');
+      // Final fallback to mock data
+      loadMockOrders();
+    }
+  };
+
+  const saveOrdersToLocal = async (orders: Order[]) => {
+    try {
+      // Use bulkPut instead of bulkAdd to handle duplicates
+      await db.orders.bulkPut(orders);
+      console.log('💾 Orders saved to local storage');
+    } catch (err) {
+      console.log('⚠️ Failed to save to local storage:', err);
+    }
+  };
+
+  const loadMockOrders = () => {
+    // Fallback mock data
     const mockOrders: Order[] = [
       {
         id: 'ORD-001',
@@ -109,50 +176,11 @@ const Orders = () => {
         sync: 'synced',
         createdAt: Date.now() - 3600000,
         updatedAt: Date.now() - 1800000
-      },
-      {
-        id: 'ORD-002',
-        ts: Date.now() - 7200000,
-        channel: 'counter',
-        customer: {
-          phone: '9876543211',
-          name: 'Walk-in Customer'
-        },
-        lines: [
-          { productId: 'prod-3', name: 'Oil (1L)', qty: 1, unitPrice: 120, total: 120 }
-        ],
-        subtotal: 120,
-        gst: 21.6,
-        total: 141.6,
-        status: 'preparing',
-        sync: 'pending',
-        createdAt: Date.now() - 7200000,
-        updatedAt: Date.now() - 3600000
-      },
-      {
-        id: 'ORD-003',
-        ts: Date.now() - 10800000,
-        channel: 'phone',
-        customer: {
-          phone: '9876543212',
-          name: 'Priya Sharma',
-          address: '456 Oak Ave, City'
-        },
-        lines: [
-          { productId: 'prod-4', name: 'Soap', qty: 5, unitPrice: 25, total: 125 }
-        ],
-        subtotal: 125,
-        gst: 22.5,
-        total: 147.5,
-        status: 'delivered',
-        sync: 'synced',
-        createdAt: Date.now() - 10800000,
-        updatedAt: Date.now() - 5400000
       }
     ];
     setOrders(mockOrders);
     setFilteredOrders(mockOrders);
-  }, []);
+  };
 
   // Filter orders
   useEffect(() => {
@@ -177,14 +205,66 @@ const Orders = () => {
     setFilteredOrders(filtered);
   }, [searchQuery, statusFilter, channelFilter, orders]);
 
-  const handleSaveOrder = (order: Order) => {
-    if (selectedOrder) {
-      // Update existing order
-      setOrders(orders.map(o => o.id === order.id ? order : o));
-    } else {
-      // Add new order
-      setOrders([order, ...orders]);
+  const handleSaveOrder = async (order: Order) => {
+    try {
+      console.log('💾 Saving order:', order.id);
+      
+      let response: any;
+      if (selectedOrder) {
+        // Update existing order
+        response = await ordersApi.updateOrder(order.id, order);
+        if (response.success) {
+          setOrders(orders.map(o => o.id === order.id ? response.data : o));
+        }
+      } else {
+        // Create new order
+        response = await ordersApi.createOrder(order);
+        if (response.success) {
+          setOrders([response.data, ...orders]);
+        }
+      }
+      
+      if (response.success) {
+        // Convert _id to id for IndexedDB compatibility
+        const orderWithId = {
+          ...response.data,
+          id: response.data._id || response.data.id
+        };
+        // Save to local storage for offline access
+        await db.orders.put(orderWithId);
+        console.log('✅ Order saved successfully');
+      } else {
+        throw new Error(response.error?.message || 'Failed to save order');
+      }
+    } catch (err) {
+      console.log('⚠️ API failed, saving to offline queue:', err);
+      
+      // Save to offline queue for sync later
+      await db.syncQueue.add({
+        id: `sync-${Date.now()}`,
+        collection: 'orders',
+        operation: selectedOrder ? 'update' : 'create',
+        documentId: order.id,
+        data: order,
+        priority: 'high',
+        deviceId: 'device-001',
+        userId: 'user-001',
+        ts: Date.now(),
+        vectorClock: { 'device-001': Date.now() },
+        checksum: 'temp',
+        retries: 0,
+        status: 'queued'
+      });
+      
+      // Update UI immediately for better UX
+      if (selectedOrder) {
+        setOrders(orders.map(o => o.id === order.id ? order : o));
+      } else {
+        setOrders([order, ...orders]);
+      }
+      setError('Order saved offline - will sync when online');
     }
+    
     setOrderFormOpen(false);
     setSelectedOrder(null);
   };
@@ -213,40 +293,6 @@ const Orders = () => {
     ));
   };
 
-  const getStatusIcon = (status: OrderStatus) => {
-    switch (status) {
-      case 'draft': return <Edit />;
-      case 'confirmed': return <CheckCircle />;
-      case 'preparing': return <AccessTime />;
-      case 'out_for_delivery': return <LocalShipping />;
-      case 'delivered': return <CheckCircle />;
-      case 'cancelled': return <Cancel />;
-      default: return <Edit />;
-    }
-  };
-
-  const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-      case 'draft': return 'default';
-      case 'confirmed': return 'success';
-      case 'preparing': return 'warning';
-      case 'out_for_delivery': return 'info';
-      case 'delivered': return 'success';
-      case 'cancelled': return 'error';
-      default: return 'default';
-    }
-  };
-
-  const getChannelIcon = (channel: OrderChannel) => {
-    switch (channel) {
-      case 'whatsapp': return <WhatsApp />;
-      case 'phone': return <Phone />;
-      case 'counter': return <Store />;
-      case 'web': return <ShoppingCart />;
-      default: return <ShoppingCart />;
-    }
-  };
-
   // Calculate stats
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(o => ['draft', 'confirmed', 'preparing'].includes(o.status)).length;
@@ -255,6 +301,23 @@ const Orders = () => {
 
   return (
     <Box>
+      {/* Loading and Error States */}
+      {loading && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            🔄 Loading orders from server...
+          </Typography>
+        </Alert>
+      )}
+      
+      {error && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            ⚠️ {error}
+          </Typography>
+        </Alert>
+      )}
+
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" fontWeight={600}>
@@ -651,8 +714,8 @@ const OrderTable: React.FC<{
               </TableCell>
             </TableRow>
           ) : (
-            orders.map((order) => (
-              <TableRow key={order.id} hover>
+            orders.map((order, index) => (
+              <TableRow key={order.id || `order-${index}`} hover>
                 <TableCell>
                   <Typography variant="body2" fontWeight={500}>
                     {order.id}
