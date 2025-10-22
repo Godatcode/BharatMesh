@@ -21,6 +21,9 @@ import attendanceRoutes from './routes/attendance';
 const app = express();
 const httpServer = createServer(app);
 
+// Add this line for Render deployment
+app.set('trust proxy', 1);  // Trust first proxy
+
 // CORS configuration - allow all origins
 const corsOptions = {
   origin: true, // Allow all origins
