@@ -21,24 +21,9 @@ import attendanceRoutes from './routes/attendance';
 const app = express();
 const httpServer = createServer(app);
 
-// CORS configuration - allow multiple localhost ports in development
+// CORS configuration - allow all origins
 const corsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // In development, allow any localhost origin
-    if (config.server.env === 'development' && origin.startsWith('http://localhost')) {
-      return callback(null, true);
-    }
-    
-    // In production, check against configured origin
-    if (origin === config.server.corsOrigin) {
-      return callback(null, true);
-    }
-    
-    callback(new Error('Not allowed by CORS'));
-  },
+  origin: true, // Allow all origins
   credentials: true
 };
 
