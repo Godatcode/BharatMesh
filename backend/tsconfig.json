@@ -17,9 +17,6 @@
     "types": ["node"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "shared"],
-  "paths": {
-    "@bharatmesh/shared": ["./shared/src/index.ts"]
-  }
+  "exclude": ["node_modules", "dist", "shared"]
 }
 

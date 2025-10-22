@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Business as IBusiness, BusinessType, BusinessSettings } from '@bharatmesh/shared';
+import { Business as IBusiness, BusinessType, BusinessSettings } from '../types/business';
 
 export interface BusinessDocument extends Omit<IBusiness, 'id'>, Document {
   settings: BusinessSettings;

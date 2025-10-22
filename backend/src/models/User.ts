@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { User as IUser, Role } from '@bharatmesh/shared';
+import { User as IUser, Role } from '../types/user';
 
 export interface UserDocument extends Omit<IUser, 'id'>, Document {}
 
