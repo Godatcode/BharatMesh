@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Device as IDevice, DeviceRole } from '@bharatmesh/shared';
+import { Device as IDevice, DeviceRole } from '../types/user';
 
 export interface DeviceDocument extends Omit<IDevice, 'id'>, Document {}
 

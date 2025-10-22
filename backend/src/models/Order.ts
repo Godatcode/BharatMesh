@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Order } from '@bharatmesh/shared';
+import { Order } from '../types/orders';
 
 export interface IOrder extends Omit<Order, 'id'>, Document {
   // Additional fields for backend storage

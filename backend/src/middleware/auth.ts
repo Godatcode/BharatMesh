@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config';
 import logger from '../utils/logger';
 import User from '../models/User';
-import { Role, Permission, RolePermissions } from '@bharatmesh/shared';
+import { Role, Permission, RolePermissions } from '../types/user';
 
 export interface AuthRequest extends Request {
   user?: {

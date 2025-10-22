@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { AttendanceRecord } from '@bharatmesh/shared';
+import { AttendanceRecord } from '../types/attendance';
 
 export interface IAttendance extends Omit<AttendanceRecord, 'id'>, Document {
   id: string;

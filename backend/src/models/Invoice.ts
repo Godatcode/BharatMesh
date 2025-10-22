@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Invoice as IInvoice, InvoiceItem, GSTBreakup } from '@bharatmesh/shared';
+import { Invoice as IInvoice, InvoiceItem, GSTBreakup } from '../types/billing';
 
 export interface InvoiceDocument extends Omit<IInvoice, 'id'>, Document {}
 

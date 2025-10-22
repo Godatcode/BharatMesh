@@ -5,7 +5,7 @@
 
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
-import { Order } from '@bharatmesh/shared';
+import { Order } from '../types/orders';
 import { authenticate, requireRole } from '../middleware/auth';
 import logger from '../utils/logger';
 import { generateId } from '../utils/ulid';

@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { Product as IProduct, Batch, Unit } from '@bharatmesh/shared';
+import { Product as IProduct, Batch, Unit } from '../types/inventory';
 
 export interface ProductDocument extends Omit<IProduct, 'id'>, Document {}
 
