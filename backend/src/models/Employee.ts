@@ -178,7 +178,5 @@ const EmployeeSchema = new Schema<IEmployee>({
 
 // Indexes
 EmployeeSchema.index({ businessId: 1, isActive: 1 });
-EmployeeSchema.index({ employeeId: 1 });
-EmployeeSchema.index({ phone: 1 });
 
 export default mongoose.model<IEmployee>('Employee', EmployeeSchema);
