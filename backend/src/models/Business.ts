@@ -27,8 +27,7 @@ const BusinessSchema = new Schema<BusinessDocument>({
   address: { type: AddressSchema, required: true },
   logo: { type: String },
   ownerId: { 
-    type: Schema.Types.ObjectId, 
-    ref: 'User', 
+    type: String, 
     required: true 
   },
   enabledModules: [{ type: String, required: true }],

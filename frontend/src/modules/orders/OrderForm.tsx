@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { Order, OrderLine, OrderChannel, OrderStatus, Unit } from '@bharatmesh/shared';
+import { inventoryApi } from '@services/api';
 
 interface Product {
   id: string;
@@ -81,16 +82,35 @@ const OrderForm: React.FC<OrderFormProps> = ({ order, onSave, onClose }) => {
 
   // Mock products
   useEffect(() => {
-    const mockProducts: Product[] = [
-      { id: 'prod-1', name: 'Rice (1kg)', unitPrice: 50, unit: 'kg', stock: 25 },
-      { id: 'prod-2', name: 'Dal (500g)', unitPrice: 80, unit: 'g', stock: 5 },
-      { id: 'prod-3', name: 'Oil (1L)', unitPrice: 120, unit: 'l', stock: 0 },
-      { id: 'prod-4', name: 'Soap', unitPrice: 25, unit: 'piece', stock: 200 },
-      { id: 'prod-5', name: 'Biscuits', unitPrice: 15, unit: 'packet', stock: 150 }
-    ];
-    setProducts(mockProducts);
-    setFilteredProducts(mockProducts);
+    loadProducts();
   }, []);
+
+  const loadProducts = async () => {
+    try {
+      console.log('🔄 Loading products for order form...');
+      const response = await inventoryApi.getProducts();
+      
+      if (response.success) {
+        console.log('✅ Products loaded for order form:', response.data.length);
+        setProducts(response.data);
+        setFilteredProducts(response.data);
+      } else {
+        throw new Error(response.error?.message || 'Failed to load products');
+      }
+    } catch (err) {
+      console.log('⚠️ Failed to load products, using mock data:', err);
+      // Fallback to mock products
+      const mockProducts: Product[] = [
+        { id: 'prod-1', name: 'Rice (1kg)', unitPrice: 50, unit: 'kg', stock: 25 },
+        { id: 'prod-2', name: 'Dal (500g)', unitPrice: 80, unit: 'g', stock: 5 },
+        { id: 'prod-3', name: 'Oil (1L)', unitPrice: 120, unit: 'l', stock: 0 },
+        { id: 'prod-4', name: 'Soap', unitPrice: 25, unit: 'piece', stock: 200 },
+        { id: 'prod-5', name: 'Biscuits', unitPrice: 15, unit: 'packet', stock: 150 }
+      ];
+      setProducts(mockProducts);
+      setFilteredProducts(mockProducts);
+    }
+  };
 
   // Filter products
   useEffect(() => {

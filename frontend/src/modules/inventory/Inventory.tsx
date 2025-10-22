@@ -142,8 +142,8 @@ const Inventory = () => {
 
   const saveProductsToLocal = async (products: Product[]) => {
     try {
-      await db.products.clear();
-      await db.products.bulkAdd(products);
+      // Use bulkPut instead of bulkAdd to handle duplicates
+      await db.products.bulkPut(products);
       console.log('💾 Products saved to local storage');
     } catch (err) {
       console.log('⚠️ Failed to save to local storage:', err);

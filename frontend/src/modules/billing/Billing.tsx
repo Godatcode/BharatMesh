@@ -21,7 +21,8 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  Tooltip
+  Tooltip,
+  Alert
 } from '@mui/material';
 import { 
   Add, 
@@ -39,6 +40,8 @@ import { useTranslation } from 'react-i18next';
 import { Invoice } from '@bharatmesh/shared';
 import InvoiceForm from './InvoiceForm';
 import { useAuthStore } from '@stores/authStore';
+import { billingApi } from '@services/api';
+import { db } from '@services/db';
 
 const Billing = () => {
   const { t } = useTranslation();
@@ -49,10 +52,70 @@ const Billing = () => {
   const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load invoices on mount
   useEffect(() => {
-    // Mock data - in real app, load from API
+    loadInvoices();
+  }, [user?.id]);
+
+  const loadInvoices = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('🔄 Loading invoices from API...');
+      
+      // Try to load from API first
+      const response = await billingApi.getInvoices();
+      
+      if (response.success) {
+        console.log('✅ Invoices loaded from API:', response.data.length);
+        setInvoices(response.data);
+        setFilteredInvoices(response.data);
+        
+        // Save to local storage for offline access
+        await saveInvoicesToLocal(response.data);
+      } else {
+        throw new Error(response.error?.message || 'Failed to load invoices');
+      }
+    } catch (err) {
+      console.log('⚠️ API failed, loading from local storage:', err);
+      setError('Using offline data - ' + (err as Error).message);
+      
+      // Fallback to local storage
+      await loadInvoicesFromLocal();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadInvoicesFromLocal = async () => {
+    try {
+      const localInvoices = await db.invoices.toArray();
+      console.log('📱 Invoices loaded from local storage:', localInvoices.length);
+      setInvoices(localInvoices);
+      setFilteredInvoices(localInvoices);
+    } catch (err) {
+      console.log('❌ Local storage failed, using mock data');
+      // Final fallback to mock data
+      loadMockInvoices();
+    }
+  };
+
+  const saveInvoicesToLocal = async (invoices: Invoice[]) => {
+    try {
+      // Use bulkPut instead of bulkAdd to handle duplicates
+      await db.invoices.bulkPut(invoices);
+      console.log('💾 Invoices saved to local storage');
+    } catch (err) {
+      console.log('⚠️ Failed to save to local storage:', err);
+    }
+  };
+
+  const loadMockInvoices = () => {
+    // Fallback mock data
     const mockInvoices: Invoice[] = [
       {
         id: 'INV-001',
@@ -69,26 +132,11 @@ const Billing = () => {
         tender: 'cash',
         customer: { name: 'Rajesh Kumar', phone: '9876543210' },
         sync: 'synced'
-      },
-      {
-        id: 'INV-002',
-        ts: Date.now() - 7200000,
-        deviceId: 'device-1',
-        userId: user?.id || '',
-        items: [
-          { productId: '3', name: 'Oil (1L)', qty: 1, unitPrice: 120, gstRate: 12, total: 120 }
-        ],
-        subtotal: 120,
-        gst: { cgst: 7.2, sgst: 7.2, igst: 0, totalGst: 14.4 },
-        total: 134.4,
-        tender: 'upi',
-        customer: { name: 'Walk-in Customer' },
-        sync: 'pending'
       }
     ];
     setInvoices(mockInvoices);
     setFilteredInvoices(mockInvoices);
-  }, [user?.id]);
+  };
 
   // Filter invoices based on search
   useEffect(() => {
@@ -104,8 +152,46 @@ const Billing = () => {
     }
   }, [searchQuery, invoices]);
 
-  const handleSaveInvoice = (newInvoice: Invoice) => {
-    setInvoices([newInvoice, ...invoices]);
+  const handleSaveInvoice = async (newInvoice: Invoice) => {
+    try {
+      console.log('💾 Saving invoice:', newInvoice.id);
+      
+      const response = await billingApi.createInvoice(newInvoice);
+      
+      if (response.success) {
+        console.log('✅ Invoice saved successfully');
+        setInvoices([response.data, ...invoices]);
+        
+        // Save to local storage for offline access
+        await db.invoices.put(response.data);
+      } else {
+        throw new Error(response.error?.message || 'Failed to save invoice');
+      }
+    } catch (err) {
+      console.log('⚠️ API failed, saving to offline queue:', err);
+      
+      // Save to offline queue for sync later
+      await db.syncQueue.add({
+        id: `sync-${Date.now()}`,
+        collection: 'invoices',
+        operation: 'create',
+        documentId: newInvoice.id,
+        data: newInvoice,
+        priority: 'high',
+        deviceId: 'device-001',
+        userId: user?.id || 'user-001',
+        ts: Date.now(),
+        vectorClock: { 'device-001': Date.now() },
+        checksum: 'temp',
+        retries: 0,
+        status: 'queued'
+      });
+      
+      // Update UI immediately for better UX
+      setInvoices([newInvoice, ...invoices]);
+      setError('Invoice saved offline - will sync when online');
+    }
+    
     setInvoiceFormOpen(false);
   };
 
@@ -149,6 +235,23 @@ const Billing = () => {
             {t('billing.newInvoice')}
           </Button>
         </Box>
+
+        {/* Loading and Error States */}
+        {loading && (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            <Typography variant="body2">
+              🔄 Loading invoices from server...
+            </Typography>
+          </Alert>
+        )}
+        
+        {error && (
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            <Typography variant="body2">
+              ⚠️ {error}
+            </Typography>
+          </Alert>
+        )}
 
         {/* Quick Stats */}
         <Grid container spacing={2} mb={3}>

@@ -199,3 +199,20 @@ export const devicesApi = {
     api.delete(`/devices/${id}`)
 };
 
+export const ordersApi = {
+  createOrder: (order: any) =>
+    api.post('/orders', order),
+
+  getOrders: (params?: any) =>
+    api.get('/orders', { params }),
+
+  getOrder: (id: string) =>
+    api.get(`/orders/${id}`),
+
+  updateOrder: (id: string, order: any) =>
+    api.put(`/orders/${id}`, order),
+
+  deleteOrder: (id: string) =>
+    api.delete(`/orders/${id}`)
+};
+

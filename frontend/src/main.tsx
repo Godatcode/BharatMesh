@@ -7,8 +7,8 @@ import { theme } from './theme';
 import './i18n';
 import './index.css';
 
-// Register service worker
-if ('serviceWorker' in navigator) {
+// Register service worker only in production
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch((error) => {
       console.error('Service Worker registration failed:', error);
@@ -18,7 +18,7 @@ if ('serviceWorker' in navigator) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <App />
