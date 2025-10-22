@@ -216,3 +216,17 @@ export const ordersApi = {
     api.delete(`/orders/${id}`)
 };
 
+export const attendanceApi = {
+  getAttendance: (params?: any) =>
+    api.get('/attendance', { params }),
+
+  clockIn: (data: any) =>
+    api.post('/attendance/clock-in', data),
+
+  clockOut: (data: any) =>
+    api.post('/attendance/clock-out', data),
+
+  getStats: (params?: any) =>
+    api.get('/attendance/stats', { params })
+};
+

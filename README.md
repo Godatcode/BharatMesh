@@ -1,190 +1,244 @@
-# BharatMesh
+# BharatMesh - Offline-First Service Platform
 
-**Offline-First Service Orchestration Platform for Tier 2/3 Indian SMBs**
+A comprehensive MERN stack application designed for Tier 2/3 Indian SMBs, featuring offline-first architecture, real-time sync, and vernacular UI support.
 
-## Vision
+## 🎯 Project Overview
 
-Enable small and medium businesses in Tier 2/3 Indian cities to digitize operations using microservices that run locally on low-cost devices, work offline during power cuts and internet outages, and sync peer-to-peer without mandatory cloud dependency.
+**BharatMesh** is a complete business management solution built with modern web technologies. It provides essential business functions like billing, inventory management, order processing, and attendance tracking - all designed to work offline-first for reliable operation in areas with poor internet connectivity.
 
-## Key Features
-
-✅ **100% Offline Operation** - Works 24+ hours without internet  
-✅ **P2P Mesh Sync** - Automatic device discovery via WiFi/Bluetooth  
-✅ **Vernacular UI** - 8+ Indian languages with voice support  
-✅ **Low-Cost Hardware** - Runs on ₹8K-12K Android tablets  
-✅ **Zero Cloud Dependency** - Optional backup only  
-✅ **Power Resilient** - Bluetooth fallback during outages
-
-## Tech Stack
-
-- **Frontend:** React 18 + TypeScript + Vite + Material-UI + PWA
-- **Backend:** Node.js 20 + Express + MongoDB + Socket.io
-- **Sync:** WebRTC + PouchDB + CRDT conflict resolution
-- **Storage:** IndexedDB (client) + MongoDB (local server)
-- **Security:** JWT + AES-256-GCM + Biometric auth
-
-## Project Structure
-
-```
-bharatmesh/
-├── backend/          # Node.js/Express server
-│   ├── src/
-│   │   ├── api/      # REST API routes
-│   │   ├── services/ # Business logic
-│   │   ├── models/   # MongoDB schemas
-│   │   ├── sync/     # P2P sync engine
-│   │   └── discovery/# Device discovery
-├── frontend/         # React PWA
-│   ├── src/
-│   │   ├── modules/  # Microservices (Billing, Inventory, etc.)
-│   │   ├── core/     # Shared components
-│   │   ├── sync/     # P2P sync client
-│   │   └── i18n/     # Translations
-└── shared/           # Shared TypeScript types
-```
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Node.js 20+
-- MongoDB 7+
+- Node.js 18+
+- MongoDB 6+
 - npm or yarn
 
 ### Installation
 
+1. **Clone the repository**
 ```bash
-# Install dependencies
-npm run install:all
+git clone <repository-url>
+cd MERN
+```
 
-# Start development servers
+2. **Install dependencies**
+```bash
+npm install --workspaces
+```
+
+3. **Environment Setup**
+```bash
+# Backend
+cd backend
+cp .env.example .env
+# Edit .env with your MongoDB URI and JWT secrets
+
+# Frontend
+cd ../frontend
+cp .env.example .env
+# Edit .env with your API URL
+```
+
+4. **Start Development Servers**
+```bash
+# Terminal 1 - Backend
+cd backend
 npm run dev
 
-# Backend runs on: http://localhost:5000
-# Frontend runs on: http://localhost:5173
+# Terminal 2 - Frontend
+cd frontend
+npm run dev
 ```
 
-### First-Time Setup
+5. **Access the Application**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:5001/api
+- MongoDB: localhost:27017
 
-1. Install BharatMesh APK on Android device (or use PWA in browser)
-2. Choose business template (Kirana/Coaching/Manufacturing)
-3. Enable required modules
-4. Import products/students CSV (optional)
-5. Pair additional devices via QR code
-6. Start transacting!
+## 📱 Features
 
-## Core Modules
+### Core Business Modules
+- **🔐 Authentication**: JWT-based authentication with role management
+- **💰 Billing**: Complete invoicing system with GST calculation and payment tracking
+- **📦 Inventory**: Product management, stock tracking, and batch management
+- **📋 Orders**: Order processing, status tracking, and customer management
+- **👥 Attendance**: Clock in/out system with geofencing and location tracking
+- **📊 Analytics**: Business intelligence dashboard with charts and reports
 
-### 1. Billing
-- Offline invoice generation
-- Multi-tender support (Cash/UPI/Card/Credit)
-- GST compliance (CGST/SGST/IGST)
-- Thermal printer support
-- Barcode scanning
+### Technical Features
+- **📱 Offline-First**: Works without internet using IndexedDB (Dexie)
+- **🔄 Real-time Sync**: Socket.io for real-time data synchronization
+- **📱 PWA**: Installable progressive web app with service workers
+- **🌐 Multi-Language**: English and Hindi support with i18next
+- **📱 Responsive**: Mobile-first design with Material-UI
+- **🔒 TypeScript**: Full type safety across frontend and backend
+- **🎨 Modern UI**: Clean, intuitive interface with Material Design
 
-### 2. Inventory
-- Real-time stock tracking
-- Batch and expiry management
-- Low-stock alerts
-- Supplier quick-reorder
-- Valuation reports
+## 🏗️ Architecture
 
-### 3. Orders (WhatsApp Integration)
-- Automated order parsing
-- Vernacular NLP support
-- Status updates
-- Voice note transcription
+### Backend (Node.js + Express + MongoDB)
+- **RESTful API** design with proper HTTP methods
+- **JWT Authentication** with refresh tokens
+- **MongoDB** with Mongoose ODM
+- **Socket.io** for real-time communication
+- **Role-based Access Control** (RBAC)
+- **Input validation** and sanitization
+- **Error handling** and logging
 
-### 4. UPI Reconciliation
-- SMS parsing (on-device only)
-- Auto-match to invoices
-- Partial payment support
-- Unidentified payment queue
+### Frontend (React + TypeScript + Material-UI)
+- **React 18** with TypeScript
+- **Material-UI** component library
+- **Zustand** for state management
+- **React Router** for navigation
+- **i18next** for internationalization
+- **Dexie** for IndexedDB operations
+- **PWA** with service workers
 
-### 5. Attendance
-- Geofenced clock in/out
-- Selfie verification
-- Shift scheduling
-- Salary calculation
+### Database (MongoDB)
+- **User management** with roles and permissions
+- **Business data storage** with proper relationships
+- **Optimized queries** and indexing
+- **Data validation** and constraints
 
-## Offline-First Architecture
+## 🎯 Key Business Features
 
-### Local-First Data Flow
+### 1. Billing System
+- Create and manage invoices
+- GST calculation (5%, 12%, 18%, 28%)
+- Multiple payment methods (Cash, UPI, Card)
+- Customer management
+- Payment tracking
+
+### 2. Inventory Management
+- Product catalog with categories
+- Stock level tracking
+- Low stock alerts
+- Batch management with expiry dates
+- Supplier management
+- Stock adjustments
+
+### 3. Order Management
+- Order creation and tracking
+- Multiple channels (WhatsApp, Counter, Phone, Web)
+- Order status management
+- Customer communication
+- Order analytics
+
+### 4. Attendance System
+- Clock in/out with GPS verification
+- Geofencing for location validation
+- Selfie capture for verification
+- Attendance reports and analytics
+- Overtime calculation
+
+### 5. Analytics Dashboard
+- Revenue trends and charts
+- Sales performance metrics
+- Inventory health indicators
+- Staff performance tracking
+- Business intelligence reports
+
+## 🚀 Deployment
+
+### Docker Deployment
+```bash
+docker-compose up -d
 ```
-User Action → IndexedDB (instant) → Local Queue → P2P Sync → Cloud Backup (optional)
+
+### Manual Deployment
+1. Build frontend: `cd frontend && npm run build`
+2. Start backend: `cd backend && npm start`
+3. Configure reverse proxy (nginx)
+
+## 📚 API Documentation
+
+### Authentication Endpoints
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/auth/profile` - Get user profile
+- `POST /api/auth/refresh` - Refresh access token
+
+### Billing Endpoints
+- `GET /api/billing/invoices` - List invoices
+- `POST /api/billing/invoices` - Create invoice
+- `GET /api/billing/invoices/:id` - Get invoice details
+- `PUT /api/billing/invoices/:id` - Update invoice
+- `GET /api/billing/stats` - Billing statistics
+
+### Inventory Endpoints
+- `GET /api/inventory/products` - List products
+- `POST /api/inventory/products` - Create product
+- `PUT /api/inventory/products/:id` - Update product
+- `DELETE /api/inventory/products/:id` - Delete product
+- `GET /api/inventory/stats` - Inventory statistics
+
+### Orders Endpoints
+- `GET /api/orders` - List orders
+- `POST /api/orders` - Create order
+- `GET /api/orders/:id` - Get order details
+- `PUT /api/orders/:id` - Update order
+- `DELETE /api/orders/:id` - Delete order
+
+### Attendance Endpoints
+- `POST /api/attendance/clock-in` - Clock in
+- `POST /api/attendance/clock-out` - Clock out
+- `GET /api/attendance` - Get attendance records
+- `GET /api/attendance/stats` - Attendance statistics
+
+## 🛠️ Development
+
+### Project Structure
+```
+MERN/
+├── backend/              # Node.js + Express API
+│   ├── src/
+│   │   ├── models/       # MongoDB models
+│   │   ├── routes/       # API routes
+│   │   ├── middleware/   # Custom middleware
+│   │   └── utils/        # Utility functions
+│   └── package.json
+├── frontend/             # React + TypeScript UI
+│   ├── src/
+│   │   ├── components/   # Reusable components
+│   │   ├── modules/      # Feature modules
+│   │   ├── services/     # API services
+│   │   └── stores/       # State management
+│   └── package.json
+├── shared/               # Shared TypeScript types
+│   └── src/types/        # Type definitions
+├── docker-compose.yml    # Docker configuration
+└── README.md
 ```
 
-### Sync Priority Lanes
-- **Critical** (<30s): Billing, Payments
-- **High** (2-5min): Inventory, Orders
-- **Medium** (daily): Attendance
-- **Low** (weekly): Analytics
+### Available Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run test` - Run tests
+- `npm run lint` - Run linter
 
-### Conflict Resolution
-- **Last-Write-Wins** (LWW) for simple fields
-- **Additive Counters** for inventory
-- **Manual Review** for financial duplicates
-- **Visual Diff UI** for owners
+## 🎯 Demo Credentials
 
-## Device Requirements
+**Test User:**
+- Phone: 9999999999
+- PIN: 1234
+- Role: Owner
 
-- **OS:** Android 10+
-- **RAM:** 3GB minimum, 4GB recommended
-- **Storage:** 8GB free space
-- **Connectivity:** WiFi 2.4/5GHz + Bluetooth 5.0
-- **Optional:** Thermal printer (Bluetooth), Barcode scanner
+## 📄 License
 
-## Pricing
+This project is licensed under the MIT License.
 
-- **Free Tier:** Up to 3 devices, core modules, local-only
-- **Pro (₹299/mo):** Up to 10 devices, 10GB cloud backup, WhatsApp API
-- **Enterprise (₹999/mo):** Unlimited devices, 100GB backup, multi-location
+## 🤝 Contributing
 
-## Security
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-- **Authentication:** JWT + Biometric/PIN unlock
-- **Encryption:** AES-256-GCM for sensitive data at rest
-- **Transport:** TLS 1.3 + WebRTC DTLS/SRTP
-- **Privacy:** On-device analytics, no third-party trackers
-- **RBAC:** Owner, Manager, Employee, Auditor, Family roles
+## 📞 Support
 
-## Development Timeline
-
-- **Week 1-2:** Registry, Discovery, Billing, Hindi UI
-- **Week 3:** Inventory, Sync, Conflict resolution
-- **Week 4:** Attendance, Exports (PDF/CSV)
-- **Week 5:** WhatsApp Orders, UPI reconciliation
-- **Week 6:** Admin panel, Backup/Restore, Analytics
-- **Buffer:** Pilot testing, performance optimization
-
-## Target Users
-
-### Primary Personas
-1. **Kirana Store Owners** - Grocery/retail shops
-2. **Coaching Centers** - Education institutions
-3. **Small Manufacturers** - Auto parts, handicrafts
-
-### Market Opportunity
-- **50M+ SMBs** in Tier 2/3 India
-- **<5% digitized** (vs 40% in metros)
-- **₹2,500 Cr+ TAM** (10% penetration @ ₹5K ARPU)
-
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details
-
-## Support
-
-- **Documentation:** [docs.bharatmesh.in](https://docs.bharatmesh.in)
-- **WhatsApp:** +91-XXXX-XXXXXX (Hindi/English/Tamil support)
-- **Email:** support@bharatmesh.in
-- **Community:** [community.bharatmesh.in](https://community.bharatmesh.in)
+For support, email support@bharatmesh.in or create an issue in the repository.
 
 ---
 
-**Built with ❤️ for Bharat SMBs**
-
+**Built with ❤️ for Indian SMBs**
