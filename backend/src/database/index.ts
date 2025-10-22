@@ -4,6 +4,12 @@ import logger from '../utils/logger';
 
 export async function connectDatabase(): Promise<void> {
   try {
+    console.log('🔍 Database connection debug:');
+    console.log('🔍 MONGO_URI:', process.env.MONGO_URI ? 'set' : 'not set');
+    console.log('🔍 MONGO_USER:', process.env.MONGO_USER ? 'set' : 'not set');
+    console.log('🔍 MONGO_PASSWORD:', process.env.MONGO_PASSWORD ? 'set' : 'not set');
+    console.log('🔍 config.database.mongoUri:', config.database.mongoUri ? 'set' : 'not set');
+    
     const options: mongoose.ConnectOptions = {
       autoIndex: true,
       maxPoolSize: 10,
@@ -18,6 +24,7 @@ export async function connectDatabase(): Promise<void> {
       };
     }
 
+    console.log('🔍 About to connect to MongoDB with URI:', config.database.mongoUri);
     await mongoose.connect(config.database.mongoUri, options);
     
     logger.info('✅ MongoDB connected successfully', {
