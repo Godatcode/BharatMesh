@@ -30,7 +30,7 @@ const OrderSchema = new Schema<IOrder>({
     },
     name: {
       type: String,
-      required: false
+      required: true
     },
     address: {
       type: String,
@@ -147,6 +147,7 @@ const OrderSchema = new Schema<IOrder>({
     required: true
   }
 }, {
+  id: false,
   timestamps: true,
   toJSON: {
     transform: (doc: any, ret: any) => {
