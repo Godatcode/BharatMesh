@@ -261,6 +261,22 @@ async function startServer() {
 
 // Start the server
 if (require.main === module) {
+  console.log('🚀 Starting BharatMesh Backend...');
+  console.log('📋 Environment:', process.env.NODE_ENV || 'development');
+  console.log('🔗 MongoDB URI:', process.env.MONGO_URI ? 'configured' : 'not configured');
+  console.log('🔑 JWT Secret:', process.env.JWT_SECRET ? 'configured' : 'not configured');
+  
+  // Add basic error handling for startup
+  process.on('uncaughtException', (error) => {
+    console.error('❌ Uncaught Exception:', error);
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    process.exit(1);
+  });
+
   startServer();
 }
 
