@@ -12,6 +12,7 @@ import AuthLayout from '@components/layouts/AuthLayout';
 
 // Pages
 import Login from '@modules/auth/Login';
+import Register from '@modules/auth/Register';
 import Dashboard from '@modules/dashboard/Dashboard';
 import Billing from '@modules/billing/Billing';
 import Inventory from '@modules/inventory/Inventory';
@@ -74,6 +75,7 @@ function App() {
           <>
             <Route path="/auth" element={<AuthLayout />}>
               <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
             </Route>
             <Route path="*" element={<Navigate to="/auth/login" replace />} />
           </>

@@ -11,6 +11,42 @@ import logger from '../utils/logger';
 
 const router = Router();
 
+// Helper function to normalize phone numbers
+function normalizePhoneNumber(phone: string): string {
+  // Remove all non-digit characters except +
+  const cleanPhone = phone.replace(/[^\d+]/g, '');
+  
+  // If it already starts with +, return as is
+  if (cleanPhone.startsWith('+')) {
+    return cleanPhone;
+  }
+  
+  // If it starts with 91 and has 12 digits, add +
+  if (cleanPhone.startsWith('91') && cleanPhone.length === 12) {
+    return `+${cleanPhone}`;
+  }
+  
+  // If it has 10 digits, assume it's Indian number and add +91
+  if (cleanPhone.length === 10) {
+    return `+91${cleanPhone}`;
+  }
+  
+  // If it has 11 digits and starts with 1, assume US number
+  if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+    return `+${cleanPhone}`;
+  }
+  
+  // For other lengths, try to detect country code
+  // This is a simplified version - in production, you'd use a proper library
+  if (cleanPhone.length >= 10) {
+    // Default to +91 for Indian numbers
+    return `+91${cleanPhone}`;
+  }
+  
+  // If all else fails, return as is
+  return cleanPhone;
+}
+
 /**
  * POST /api/auth/register
  * Register new user (owner creates employees)
@@ -18,7 +54,7 @@ const router = Router();
 router.post('/register',
   validate([
     body('name').trim().notEmpty().withMessage('Name is required'),
-    body('phone').trim().isMobilePhone('en-IN').withMessage('Valid Indian phone number required'),
+    body('phone').trim().isLength({ min: 10, max: 15 }).withMessage('Valid phone number required'),
     body('role').isIn(['owner', 'manager', 'employee', 'auditor', 'family']),
     body('pin').isLength({ min: 4, max: 6 }).withMessage('PIN must be 4-6 digits'),
     body('preferredLang').optional().isIn(['en', 'hi', 'ta', 'te', 'bn', 'mr', 'gu', 'kn', 'ml'])
@@ -27,8 +63,12 @@ router.post('/register',
     try {
       const { name, phone, email, role, pin, preferredLang, langs } = req.body;
       
+      // Normalize phone number
+      const normalizedPhone = normalizePhoneNumber(phone);
+      console.log('📱 Normalized phone:', phone, '→', normalizedPhone);
+      
       // Check if user already exists
-      const existingUser = await User.findOne({ phone });
+      const existingUser = await User.findOne({ phone: normalizedPhone });
       if (existingUser) {
         return res.status(400).json({
           success: false,
@@ -42,7 +82,7 @@ router.post('/register',
       // Create user
       const user = new User({
         name,
-        phone,
+        phone: normalizedPhone,
         email,
         role: role || 'employee',
         pin: hashedPin,
@@ -97,7 +137,7 @@ router.post('/register',
  */
 router.post('/login',
   validate([
-    body('phone').trim().isMobilePhone('en-IN'),
+    body('phone').trim().isLength({ min: 10, max: 15 }).withMessage('Valid phone number required'),
     body('pin').optional().isLength({ min: 4, max: 6 }),
     body('biometricToken').optional().isString()
   ]),
@@ -105,7 +145,11 @@ router.post('/login',
     try {
       const { phone, pin, biometricToken } = req.body;
       
-      const user = await User.findOne({ phone, isActive: true });
+      // Normalize phone number
+      const normalizedPhone = normalizePhoneNumber(phone);
+      console.log('📱 Login - Normalized phone:', phone, '→', normalizedPhone);
+      
+      const user = await User.findOne({ phone: normalizedPhone, isActive: true });
       if (!user) {
         return res.status(401).json({
           success: false,

@@ -28,6 +28,7 @@ router.post('/products',
     try {
       const product = new Product({
         _id: generateId(),
+        userId: req.user!.id,  // Critical: Associate with logged-in user
         ...req.body,
         stock: req.body.stock || 0,
         reorderLevel: req.body.reorderLevel || 10,
@@ -74,7 +75,10 @@ router.get('/products',
       const pageSize = parseInt(req.query.pageSize as string) || 50;
       const skip = (page - 1) * pageSize;
       
-      const filter: any = { isActive: true };
+      const filter: any = { 
+        isActive: true,
+        userId: req.user!.id  // Critical: Only show products for the logged-in user
+      };
       
       if (req.query.search) {
         filter.$text = { $search: req.query.search as string };
@@ -118,9 +122,12 @@ router.get('/products',
  */
 router.get('/products/:id',
   requirePermission('inventory', 'read'),
-  async (req, res) => {
+  async (req: AuthRequest, res) => {
     try {
-      const product = await Product.findById(req.params.id);
+      const product = await Product.findOne({ 
+        _id: req.params.id, 
+        userId: req.user!.id  // Only allow access to user's own products
+      });
       
       if (!product) {
         return res.status(404).json({
@@ -200,7 +207,10 @@ router.post('/products/:id/adjust-stock',
     try {
       const { delta, reason, notes } = req.body;
       
-      const product = await Product.findById(req.params.id);
+      const product = await Product.findOne({ 
+        _id: req.params.id, 
+        userId: req.user!.id  // Only allow access to user's own products
+      });
       if (!product) {
         return res.status(404).json({
           success: false,
@@ -252,6 +262,7 @@ router.get('/alerts',
       // Low stock products
       const lowStockProducts = await Product.find({
         isActive: true,
+        userId: req.user!.id,  // Only show user's own products
         $expr: { $lt: ['$stock', '$reorderLevel'] }
       }).limit(50).lean();
       
@@ -262,6 +273,7 @@ router.get('/alerts',
       
       const expiringProducts = await Product.find({
         isActive: true,
+        userId: req.user!.id,  // Only show user's own products
         'batches.expiry': { $lte: expiryThresholdISO }
       }).lean();
       
@@ -306,7 +318,10 @@ router.get('/stats',
   requirePermission('inventory', 'read'),
   async (req: AuthRequest, res) => {
     try {
-      const products = await Product.find({ isActive: true }).lean();
+      const products = await Product.find({ 
+        isActive: true,
+        userId: req.user!.id  // Only show user's own products
+      }).lean();
       
       const totalProducts = products.length;
       const totalValue = products.reduce((sum, p) => sum + (p.stock * p.costPrice), 0);

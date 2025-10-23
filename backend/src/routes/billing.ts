@@ -134,7 +134,9 @@ router.get('/invoices',
       const pageSize = parseInt(req.query.pageSize as string) || 20;
       const skip = (page - 1) * pageSize;
       
-      const filter: any = {};
+      const filter: any = {
+        userId: req.user!.id  // Critical: Only show invoices for the logged-in user
+      };
       
       if (req.query.from || req.query.to) {
         filter.ts = {};
@@ -181,9 +183,12 @@ router.get('/invoices',
  */
 router.get('/invoices/:id',
   requirePermission('billing', 'read'),
-  async (req, res) => {
+  async (req: AuthRequest, res) => {
     try {
-      const invoice = await Invoice.findById(req.params.id);
+      const invoice = await Invoice.findOne({ 
+        _id: req.params.id, 
+        userId: req.user!.id  // Only allow access to user's own invoices
+      });
       
       if (!invoice) {
         return res.status(404).json({
@@ -223,9 +228,9 @@ router.get('/stats',
       const monthStart = todayStart - (30 * 24 * 60 * 60 * 1000);
       
       const [todayInvoices, weekInvoices, monthInvoices] = await Promise.all([
-        Invoice.find({ ts: { $gte: todayStart } }).lean(),
-        Invoice.find({ ts: { $gte: weekStart } }).lean(),
-        Invoice.find({ ts: { $gte: monthStart } }).lean()
+        Invoice.find({ ts: { $gte: todayStart }, userId: req.user!.id }).lean(),
+        Invoice.find({ ts: { $gte: weekStart }, userId: req.user!.id }).lean(),
+        Invoice.find({ ts: { $gte: monthStart }, userId: req.user!.id }).lean()
       ]);
       
       const todayRevenue = todayInvoices.reduce((sum, inv) => sum + inv.total, 0);

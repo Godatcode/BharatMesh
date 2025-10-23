@@ -15,6 +15,7 @@ export interface Batch {
 
 export interface Product {
   id: string;
+  userId: string; // Critical: Associate with user for data isolation
   name: string;
   vernacular?: Record<string, string>; // e.g., { 'hi': 'बासमती चावल', 'ta': 'பாசுமதி அரிசி' }
   category?: string;

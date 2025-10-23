@@ -9,22 +9,34 @@ import {
   InputAdornment,
   IconButton,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Container,
   Paper,
   Fade,
   Slide
 } from '@mui/material';
-import { Visibility, VisibilityOff, Lock } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Person, Email, Lock } from '@mui/icons-material';
 // import { useTranslation } from 'react-i18next'; // Removed unused import
-import { useAuthStore } from '@stores/authStore';
+// import { useAuthStore } from '@stores/authStore'; // Removed unused import
 import PhoneInput from '../../components/PhoneInput';
 import GradientBlinds from '../../components/GradientBlinds';
 
-const Login = () => {
-  const [phone, setPhone] = useState('');
-  const [pin, setPin] = useState('');
+const Register = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    pin: '',
+    confirmPin: '',
+    role: 'owner' as 'owner' | 'manager' | 'employee'
+  });
   const [showPin, setShowPin] = useState(false);
-  const { login, isLoading, error, setError } = useAuthStore();
+  const [showConfirmPin, setShowConfirmPin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   // const { t } = useTranslation(); // Removed unused translation
 
@@ -61,32 +73,121 @@ const Login = () => {
     },
   };
 
+  // Styling for Select components
+  const selectSx = {
+    '& .MuiOutlinedInput-root': {
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      backdropFilter: 'blur(10px)',
+      borderRadius: '12px',
+      '& fieldset': {
+        borderColor: error ? '#ff6b6b' : 'rgba(255, 255, 255, 0.2)',
+        borderWidth: '1px',
+      },
+      '&:hover fieldset': {
+        borderColor: error ? '#ff6b6b' : 'rgba(255, 255, 255, 0.4)',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: error ? '#ff6b6b' : '#4dabf7',
+        borderWidth: '2px',
+      },
+      '& .MuiSelect-select': {
+        color: 'rgba(255, 255, 255, 0.9)',
+        padding: '12px 14px',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      color: 'rgba(255, 255, 255, 0.7)',
+      '&.Mui-focused': {
+        color: '#4dabf7',
+      },
+    },
+    '& .MuiSvgIcon-root': {
+      color: 'rgba(255, 255, 255, 0.7)',
+    },
+  };
+
+  const handleChange = (field: string) => (e: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     // Validation
-    if (phone.length !== 10) {
-      setError('Phone number must be 10 digits');
+    if (!formData.name.trim()) {
+      setError('Name is required');
       return;
     }
 
-    if (pin.length < 4 || pin.length > 6) {
+    if (!formData.phone || formData.phone.length < 10) {
+      setError('Please enter a valid phone number');
+      return;
+    }
+
+    if (formData.pin.length < 4 || formData.pin.length > 6) {
       setError('PIN must be 4-6 digits');
       return;
     }
 
-    // Send phone number as entered - backend will normalize it
-    console.log('🔍 Logging in with phone:', phone);
-    
+    if (formData.pin !== formData.confirmPin) {
+      setError('PINs do not match');
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      await login(phone, pin);
-      // Store user ID for sync
-      localStorage.setItem('userId', phone); // Temporary, will be replaced with actual user ID
-      navigate('/');
+        const response = await fetch(`${(import.meta as any).env?.VITE_API_URL || 'https://bharatmesh-backend.onrender.com/api'}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone.startsWith('+91') ? formData.phone : `+91${formData.phone}`,
+          email: formData.email || undefined,
+          role: formData.role,
+          preferredLang: 'en',
+          pin: formData.pin
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Auto-login after successful registration
+          const loginResponse = await fetch(`${(import.meta as any).env?.VITE_API_URL || 'https://bharatmesh-backend.onrender.com/api'}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone: formData.phone, // Backend will normalize
+            pin: formData.pin
+          })
+        });
+
+        const loginData = await loginResponse.json();
+
+        if (loginData.success) {
+          localStorage.setItem('accessToken', loginData.data.tokens.accessToken);
+          localStorage.setItem('refreshToken', loginData.data.tokens.refreshToken);
+          localStorage.setItem('userId', loginData.data.user.id);
+          navigate('/');
+        } else {
+          setError('Registration successful, but auto-login failed. Please login manually.');
+        }
+      } else {
+        setError(data.error?.message || 'Registration failed');
+      }
     } catch (error) {
-      console.log('❌ Login failed:', error);
-      // Error is handled by auth store
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -188,7 +289,7 @@ const Login = () => {
                     zIndex: 1,
                   }}
                 >
-                  📱
+                  🚀
                 </Box>
               </Box>
 
@@ -206,7 +307,7 @@ const Login = () => {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                Welcome Back
+                Join BharatMesh
               </Typography>
               
               <Typography
@@ -218,7 +319,7 @@ const Login = () => {
                   lineHeight: 1.6,
                 }}
               >
-                Today is a new day. It's your day. You shape it. Sign in to start managing your business.
+                Create your account and start building your business empire today.
               </Typography>
 
               <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -241,13 +342,29 @@ const Login = () => {
                   </Fade>
                 )}
 
+                <TextField
+                  fullWidth
+                  label="Full Name"
+                  placeholder="Enter your full name"
+                  value={formData.name}
+                  onChange={handleChange('name')}
+                  required
+                  autoFocus
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Person sx={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                      </InputAdornment>
+                    )
+                  }}
+                  sx={{ ...inputSx, mb: 3 }}
+                />
+
                 <PhoneInput
-                  value={phone}
-                  onChange={setPhone}
+                  value={formData.phone}
+                  onChange={(phone) => setFormData(prev => ({ ...prev, phone }))}
                   label="Phone Number"
                   required
-                  error={!!error}
-                  helperText={error || undefined}
                   disabled={isLoading}
                 />
 
@@ -255,10 +372,46 @@ const Login = () => {
 
                 <TextField
                   fullWidth
+                  label="Email (Optional)"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleChange('email')}
+                  type="email"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Email sx={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                      </InputAdornment>
+                    )
+                  }}
+                  sx={{ ...inputSx, mb: 3 }}
+                />
+
+                <FormControl 
+                  fullWidth 
+                  sx={{ ...selectSx, mb: 3 }}
+                >
+                  <InputLabel>Role</InputLabel>
+                  <Select
+                    value={formData.role}
+                    onChange={handleChange('role')}
+                    label="Role"
+                  >
+                    <MenuItem value="owner">Owner</MenuItem>
+                    <MenuItem value="manager">Manager</MenuItem>
+                    <MenuItem value="employee">Employee</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  fullWidth
                   label="PIN"
-                  placeholder="Enter your 4-6 digit PIN"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="Enter 4-6 digit PIN"
+                  value={formData.pin}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    pin: e.target.value.replace(/\D/g, '').slice(0, 6)
+                  }))}
                   type={showPin ? 'text' : 'password'}
                   required
                   InputProps={{
@@ -270,7 +423,6 @@ const Login = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          aria-label="toggle pin visibility"
                           onClick={() => setShowPin(!showPin)}
                           edge="end"
                           sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
@@ -278,9 +430,40 @@ const Login = () => {
                           {showPin ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
-                    ),
+                    )
                   }}
-                  disabled={isLoading}
+                  sx={{ ...inputSx, mb: 3 }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Confirm PIN"
+                  placeholder="Confirm your PIN"
+                  value={formData.confirmPin}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    confirmPin: e.target.value.replace(/\D/g, '').slice(0, 6)
+                  }))}
+                  type={showConfirmPin ? 'text' : 'password'}
+                  required
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock sx={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowConfirmPin(!showConfirmPin)}
+                          edge="end"
+                          sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
+                        >
+                          {showConfirmPin ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
                   sx={{ ...inputSx, mb: 3 }}
                 />
 
@@ -310,7 +493,7 @@ const Login = () => {
                     transition: 'all 0.3s ease',
                   }}
                 >
-                  {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+                  {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Create Account'}
                 </Button>
 
                 <Box sx={{ textAlign: 'center' }}>
@@ -328,9 +511,9 @@ const Login = () => {
                       },
                     }}
                   >
-                    Don't have an account?{' '}
-                    <Link to="/auth/register">
-                      Sign up
+                    Already have an account?{' '}
+                    <Link to="/auth/login">
+                      Sign In
                     </Link>
                   </Typography>
                 </Box>
@@ -343,5 +526,4 @@ const Login = () => {
   );
 };
 
-export default Login;
-
+export default Register;
