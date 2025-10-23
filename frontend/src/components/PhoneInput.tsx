@@ -10,8 +10,7 @@ import {
   MenuItem,
   FormControl,
   Typography,
-  InputBase,
-  Paper
+  InputBase
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import { countries, Country, defaultCountry } from '../data/countries';
@@ -45,7 +44,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   // Parse the current value to extract country and phone number
   useEffect(() => {
     if (value) {
-      const foundCountry = countries.find(country => 
+      const foundCountry = countries.find((country: Country) => 
         value.startsWith(country.dialCode)
       );
       
@@ -77,7 +76,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   };
 
   // Filter countries based on search query
-  const filteredCountries = countries.filter(country =>
+  const filteredCountries = countries.filter((country: Country) =>
     country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     country.dialCode.includes(searchQuery) ||
     country.code.toLowerCase().includes(searchQuery.toLowerCase())
@@ -108,7 +107,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
           <Select
             value={selectedCountry.code}
             onChange={(e) => {
-              const country = countries.find(c => c.code === e.target.value);
+              const country = countries.find((c: Country) => c.code === e.target.value);
               if (country) handleCountryChange(country);
             }}
             displayEmpty
@@ -193,7 +192,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
               />
             </Box>
             
-            {filteredCountries.map((country) => (
+            {filteredCountries.map((country: Country) => (
               <MenuItem key={country.code} value={country.code}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%' }}>
                   <Typography sx={{ fontSize: '1.3rem' }}>{country.flag}</Typography>
