@@ -13,7 +13,7 @@ import {
   InputBase
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
-import { countries, Country, defaultCountry } from '../data/countries';
+import { countries, Country, defaultCountry } from '@/data/countries';
 
 interface PhoneInputProps {
   value: string;
