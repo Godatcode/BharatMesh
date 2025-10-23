@@ -65,9 +65,16 @@ const Login = () => {
     e.preventDefault();
     setError(null);
 
-    // Validation
-    if (phone.length !== 10) {
-      setError('Phone number must be 10 digits');
+    // Validation - check if phone has country code and proper length
+    if (!phone.startsWith('+')) {
+      setError('Please select a country and enter a valid phone number');
+      return;
+    }
+    
+    // Extract phone number without country code
+    const phoneWithoutCountryCode = phone.substring(phone.indexOf('+') + 1);
+    if (phoneWithoutCountryCode.length < 10) {
+      setError('Phone number must be at least 10 digits');
       return;
     }
 

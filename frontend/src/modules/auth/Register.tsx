@@ -123,8 +123,15 @@ const Register = () => {
       return;
     }
 
-    if (!formData.phone || formData.phone.length < 10) {
-      setError('Please enter a valid phone number');
+    if (!formData.phone || !formData.phone.startsWith('+')) {
+      setError('Please select a country and enter a valid phone number');
+      return;
+    }
+    
+    // Extract phone number without country code
+    const phoneWithoutCountryCode = formData.phone.substring(formData.phone.indexOf('+') + 1);
+    if (phoneWithoutCountryCode.length < 10) {
+      setError('Phone number must be at least 10 digits');
       return;
     }
 
