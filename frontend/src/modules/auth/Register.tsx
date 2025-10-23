@@ -148,15 +148,11 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-        
         const response = await fetch(`${(import.meta as any).env?.VITE_API_URL || 'https://bharatmesh-backend.onrender.com/api'}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: controller.signal,
         body: JSON.stringify({
           name: formData.name,
           phone: formData.phone.startsWith('+91') ? formData.phone : `+91${formData.phone}`,
@@ -166,29 +162,21 @@ const Register = () => {
           pin: formData.pin
         })
       });
-      
-      clearTimeout(timeoutId);
 
       const data = await response.json();
 
       if (data.success) {
         // Auto-login after successful registration
-        const loginController = new AbortController();
-        const loginTimeoutId = setTimeout(() => loginController.abort(), 30000); // 30 second timeout
-        
         const loginResponse = await fetch(`${(import.meta as any).env?.VITE_API_URL || 'https://bharatmesh-backend.onrender.com/api'}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          signal: loginController.signal,
           body: JSON.stringify({
             phone: formData.phone, // Backend will normalize
             pin: formData.pin
           })
         });
-        
-        clearTimeout(loginTimeoutId);
 
         const loginData = await loginResponse.json();
 
@@ -354,7 +342,7 @@ const Register = () => {
                   },
                 }}
               >
-                ⏰ Please wait up to 30 seconds for the server to wake up (Render deployment)
+                ⏰ Please wait while the server wakes up (Render deployment may take some time)
               </Alert>
 
               <Box component="form" onSubmit={handleSubmit} noValidate>

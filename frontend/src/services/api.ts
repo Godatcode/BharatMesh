@@ -14,7 +14,7 @@ class ApiService {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      timeout: 30000, // Increased to 30 seconds for Render wake-up time
+      // No timeout - let requests wait indefinitely for Render wake-up
       headers: {
         'Content-Type': 'application/json'
       }
