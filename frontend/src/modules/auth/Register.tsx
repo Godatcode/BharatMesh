@@ -148,11 +148,15 @@ const Register = () => {
     setIsLoading(true);
 
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
         const response = await fetch(`${(import.meta as any).env?.VITE_API_URL || 'https://bharatmesh-backend.onrender.com/api'}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: controller.signal,
         body: JSON.stringify({
           name: formData.name,
           phone: formData.phone.startsWith('+91') ? formData.phone : `+91${formData.phone}`,
@@ -162,21 +166,29 @@ const Register = () => {
           pin: formData.pin
         })
       });
+      
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
       if (data.success) {
         // Auto-login after successful registration
-          const loginResponse = await fetch(`${(import.meta as any).env?.VITE_API_URL || 'https://bharatmesh-backend.onrender.com/api'}/auth/login`, {
+        const loginController = new AbortController();
+        const loginTimeoutId = setTimeout(() => loginController.abort(), 30000); // 30 second timeout
+        
+        const loginResponse = await fetch(`${(import.meta as any).env?.VITE_API_URL || 'https://bharatmesh-backend.onrender.com/api'}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          signal: loginController.signal,
           body: JSON.stringify({
             phone: formData.phone, // Backend will normalize
             pin: formData.pin
           })
         });
+        
+        clearTimeout(loginTimeoutId);
 
         const loginData = await loginResponse.json();
 
@@ -322,12 +334,28 @@ const Register = () => {
                 sx={{
                   color: 'rgba(255, 255, 255, 0.7)',
                   textAlign: 'center',
-                  mb: 4,
+                  mb: 2,
                   lineHeight: 1.6,
                 }}
               >
                 Create your account and start building your business empire today.
               </Typography>
+
+              {/* Render Wake-up Warning */}
+              <Alert 
+                severity="info" 
+                sx={{ 
+                  mb: 3,
+                  backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                  border: '1px solid rgba(33, 150, 243, 0.3)',
+                  color: '#4dabf7',
+                  '& .MuiAlert-icon': {
+                    color: '#4dabf7',
+                  },
+                }}
+              >
+                ⏰ Please wait up to 30 seconds for the server to wake up (Render deployment)
+              </Alert>
 
               <Box component="form" onSubmit={handleSubmit} noValidate>
                 {error && (
@@ -500,7 +528,12 @@ const Register = () => {
                     transition: 'all 0.3s ease',
                   }}
                 >
-                  {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Create Account'}
+                  {isLoading ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CircularProgress size={20} color="inherit" />
+                      <span>Creating account...</span>
+                    </Box>
+                  ) : 'Create Account'}
                 </Button>
 
                 <Box sx={{ textAlign: 'center' }}>
