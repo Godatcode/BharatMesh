@@ -10,6 +10,7 @@ export interface GeoLocation {
 
 export interface AttendanceRecord {
   id: string;
+  userId: string; // Critical: Associate with user for data isolation
   employeeId: string;
   date: string; // YYYY-MM-DD
   clockIn?: number; // Epoch ms

@@ -74,7 +74,9 @@ router.get('/', authenticate, async (req: any, res: any) => {
       endDate 
     } = req.query;
 
-    const filter: any = {};
+    const filter: any = {
+      userId: req.user.id  // Critical: Only show attendance for the logged-in user
+    };
     
     if (employeeId) filter.employeeId = employeeId;
     if (date) filter.date = date;
@@ -146,6 +148,7 @@ router.post('/clock-in',
       // Check if already clocked in today
       const existingRecord = await AttendanceModel.findOne({
         employeeId,
+        userId: req.user.id,  // Critical: Only check user's own records
         date: today,
         clockIn: { $exists: true }
       });
@@ -185,6 +188,7 @@ router.post('/clock-in',
       const attendanceRecord = new AttendanceModel({
         id: generateId(),
         employeeId,
+        userId: req.user.id,  // Critical: Associate with logged-in user
         date: today,
         clockIn: Date.now(),
         clockInPhotoEnc: selfie || null,
@@ -237,6 +241,7 @@ router.post('/clock-out',
       // Find today's record
       const attendanceRecord = await AttendanceModel.findOne({
         employeeId,
+        userId: req.user.id,  // Critical: Only allow access to user's own records
         date: today,
         clockIn: { $exists: true },
         clockOut: { $exists: false }
@@ -319,7 +324,9 @@ router.post('/clock-out',
 router.get('/stats', authenticate, async (req: any, res: any) => {
   try {
     const { employeeId, startDate, endDate } = req.query;
-    const filter: any = {};
+    const filter: any = {
+      userId: req.user.id  // Critical: Only show stats for the logged-in user
+    };
     if (employeeId) filter.employeeId = employeeId;
     if (startDate && endDate) {
       filter.date = { $gte: startDate, $lte: endDate };

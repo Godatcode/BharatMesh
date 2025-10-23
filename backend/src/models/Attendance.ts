@@ -15,6 +15,11 @@ const AttendanceSchema = new Schema<IAttendance>({
     type: String,
     required: true
   },
+  userId: {
+    type: String,
+    required: true,
+    index: true
+  },
   date: {
     type: String,
     required: true // YYYY-MM-DD format

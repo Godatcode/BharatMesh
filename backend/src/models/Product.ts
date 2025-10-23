@@ -14,6 +14,7 @@ const BatchSchema = new Schema<Batch>({
 
 const ProductSchema = new Schema<ProductDocument>({
   _id: { type: String, required: true }, // ULID
+  userId: { type: String, required: true, index: true }, // Critical: Associate with user
   name: { type: String, required: true, trim: true },
   vernacular: { 
     type: Map, 

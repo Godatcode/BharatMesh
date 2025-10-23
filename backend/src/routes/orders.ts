@@ -20,8 +20,10 @@ router.get('/', authenticate, async (req: any, res: any) => {
   try {
     const { page = 1, pageSize = 20, status, channel } = req.query;
     
-    // Build MongoDB filter
-    const filter: any = {};
+    // Build MongoDB filter - ALWAYS filter by userId for data isolation
+    const filter: any = {
+      userId: req.user.id  // Critical: Only show orders for the logged-in user
+    };
     if (status && status !== 'all') {
       filter.status = status;
     }
