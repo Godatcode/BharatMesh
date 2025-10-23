@@ -75,9 +75,9 @@ npm run dev:frontend
 ```
 
 5. **Access the Application**
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:5001/api
-- **API Health**: http://localhost:5001/health
+- **Frontend**:    https://bharat-mesh-frontend.vercel.app        (locally - http://localhost:5173)
+- **Backend API**: https://bharatmesh-backend.onrender.com/       (locally - http://localhost:5001/api)
+- **API Health**:  https://bharatmesh-backend.onrender.com/health (locally - http://localhost:5001/health)
 
 ## 📱 Core Features
 
