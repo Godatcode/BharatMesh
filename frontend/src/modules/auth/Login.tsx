@@ -241,7 +241,7 @@ const Login = () => {
                   },
                 }}
               >
-                ⏰ Please wait up to 30 seconds for the server to wake up (Render deployment)
+                ⏰ Please wait while the server wakes up (Render deployment may take some time)
               </Alert>
 
               <Box component="form" onSubmit={handleSubmit} noValidate>
