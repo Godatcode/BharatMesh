@@ -21,9 +21,9 @@ logs/
 *.log
 
 # Database
-data/
 *.db
 *.sqlite
+# Note: frontend/src/data/ is intentionally included for countries.ts
 
 # OS files
 .DS_Store
