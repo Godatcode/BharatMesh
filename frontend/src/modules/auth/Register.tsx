@@ -271,11 +271,11 @@ const Register = () => {
               >
                 <Box
                   component="img"
-                  src="/bharatmesh.jpg"
+                  src="/bharatmesh_final.png"
                   alt="BharatMesh Logo"
                   sx={{
-                    width: 120,
-                    height: 120,
+                    width: 180,
+                    height: 180,
                     objectFit: 'contain',
                   }}
                 />
