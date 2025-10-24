@@ -172,11 +172,11 @@ const Login = () => {
               >
                 <Box
                   component="img"
-                  src="/bharatmesh.jpg"
+                  src="/bharatmesh_final.png"
                   alt="BharatMesh Logo"
                   sx={{
-                    width: 120,
-                    height: 120,
+                    width: 240,
+                    height: 240,
                     objectFit: 'contain',
                   }}
                 />
