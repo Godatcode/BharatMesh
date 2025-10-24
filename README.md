@@ -2,7 +2,8 @@
 
 <div align="center">
 
-<img width="200" height="200" alt="BharatMesh Logo" src="https://github.com/user-attachments/assets/bcbbdcbd-f31d-487f-9eda-c4674726e039" />
+<img width="400" height="400" alt="BharatMesh Logo" src="https://github.com/user-attachments/assets/f686b0c5-13b7-420c-9e72-6a6e023a7481" />
+
 
 **A comprehensive MERN stack application designed for Tier 2/3 Indian SMBs**
 
