@@ -164,39 +164,22 @@ const Login = () => {
               <Box
                 sx={{
                   width: '100%',
-                  height: 200,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  borderRadius: '16px',
-                  mb: 3,
-                  position: 'relative',
-                  overflow: 'hidden',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: `
-                      radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                      radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)
-                    `,
-                  },
+                  mb: 3,
                 }}
               >
                 <Box
+                  component="img"
+                  src="/bharatmesh.jpg"
+                  alt="BharatMesh Logo"
                   sx={{
-                    fontSize: '4rem',
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    textAlign: 'center',
-                    zIndex: 1,
+                    width: 120,
+                    height: 120,
+                    objectFit: 'contain',
                   }}
-                >
-                  📱
-                </Box>
+                />
               </Box>
 
               {/* Welcome Text */}
