@@ -224,15 +224,15 @@ const Register = () => {
       >
         <GradientBlinds
           gradientColors={['#FF9FFC', '#5227FF']}
-          angle={0}
-          noise={0.3}
-          blindCount={12}
-          blindMinWidth={50}
+          angle={20}
+          noise={0.34}
+          blindCount={35}
+          blindMinWidth={55}
           spotlightRadius={0.5}
           spotlightSoftness={1}
           spotlightOpacity={1}
-          mouseDampening={0.15}
-          distortAmount={0}
+          mouseDampening={0.48}
+          distortAmount={5}
           shineDirection="left"
           mixBlendMode="lighten"
         />
