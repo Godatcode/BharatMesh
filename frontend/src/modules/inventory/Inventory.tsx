@@ -111,13 +111,11 @@ const Inventory = () => {
       setLoading(true);
       setError(null);
       
-      console.log('🔄 Loading products from API...');
       
       // Try to load from API first
       const response = await inventoryApi.getProducts();
       
       if (response.success) {
-        console.log('✅ Products loaded from API:', response.data.length);
         setProducts(response.data);
         setFilteredProducts(response.data);
         
@@ -127,7 +125,6 @@ const Inventory = () => {
         throw new Error(response.error?.message || 'Failed to load products');
       }
     } catch (err) {
-      console.log('⚠️ API failed, loading from local storage:', err);
       setError('Using offline data - ' + (err as Error).message);
       
       // Fallback to local storage
@@ -140,11 +137,9 @@ const Inventory = () => {
   const loadProductsFromLocal = async () => {
     try {
       const localProducts = await db.products.toArray();
-      console.log('📱 Products loaded from local storage:', localProducts.length);
       setProducts(localProducts);
       setFilteredProducts(localProducts);
     } catch (err) {
-      console.log('❌ Local storage failed, using mock data');
       // Final fallback to mock data
       loadMockProducts();
     }
@@ -154,9 +149,7 @@ const Inventory = () => {
     try {
       // Use bulkPut instead of bulkAdd to handle duplicates
       await db.products.bulkPut(products);
-      console.log('💾 Products saved to local storage');
     } catch (err) {
-      console.log('⚠️ Failed to save to local storage:', err);
     }
   };
 
@@ -246,7 +239,6 @@ const Inventory = () => {
 
   const handleSaveProduct = async (product: Product) => {
     try {
-      console.log('💾 Saving product:', product.name);
       
       let response: any;
       if (selectedProduct) {
@@ -266,12 +258,10 @@ const Inventory = () => {
       if (response.success) {
         // Save to local storage for offline access
         await db.products.put(response.data);
-        console.log('✅ Product saved successfully');
       } else {
         throw new Error(response.error?.message || 'Failed to save product');
       }
     } catch (err) {
-      console.log('⚠️ API failed, saving to offline queue:', err);
       
       // Save to offline queue for sync later
       await db.syncQueue.add({
@@ -359,7 +349,6 @@ const Inventory = () => {
       setAdjustmentDialogOpen(false);
       setAdjustmentProduct(null);
     } catch (err) {
-      console.log('Failed to update stock:', err);
       setError('Failed to update stock - saved offline');
     }
   };

@@ -83,12 +83,10 @@ class ApiService {
   private queueOfflineRequest(config: AxiosRequestConfig): Promise<any> {
     return new Promise((resolve, reject) => {
       this.offlineQueue.push({ config, resolve, reject });
-      console.log('📋 Request queued for offline processing');
     });
   }
 
   private async processOfflineQueue(): Promise<void> {
-    console.log(`🔄 Processing ${this.offlineQueue.length} queued requests...`);
 
     while (this.offlineQueue.length > 0) {
       const { config, resolve, reject } = this.offlineQueue.shift()!;

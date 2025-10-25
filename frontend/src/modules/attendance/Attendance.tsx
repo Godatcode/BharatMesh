@@ -106,7 +106,6 @@ const Attendance = () => {
         throw new Error(response.error?.message || 'Failed to load attendance records');
       }
     } catch (err) {
-      console.log('⚠️ API failed, loading from local storage:', err);
       setError('Using offline data - ' + (err as Error).message);
       
       // Fallback to local storage
@@ -115,7 +114,6 @@ const Attendance = () => {
         setAttendanceRecords(localRecords);
         setFilteredRecords(localRecords);
       } catch (localErr) {
-        console.log('❌ Local storage failed:', localErr);
         setError('Failed to load attendance data');
       }
     } finally {
@@ -196,7 +194,6 @@ const Attendance = () => {
         selfieData = await captureSelfie();
         setSelfie(selfieData);
       } catch (selfieError) {
-        console.log('Selfie capture failed:', selfieError);
         // Continue without selfie
       }
 
@@ -207,7 +204,6 @@ const Attendance = () => {
         selfie: selfieData,
         notes: notes
       };
-      console.log('Sending clock-in request:', requestData);
       
       const response = await attendanceApi.clockIn(requestData);
 
@@ -222,7 +218,6 @@ const Attendance = () => {
         throw new Error(response.error?.message || 'Failed to clock in');
       }
     } catch (err) {
-      console.error('Clock in error:', err);
       setLocationError((err as Error).message);
     } finally {
       setIsClockingIn(false);
@@ -244,7 +239,6 @@ const Attendance = () => {
         selfieData = await captureSelfie();
         setSelfie(selfieData);
       } catch (selfieError) {
-        console.log('Selfie capture failed:', selfieError);
         // Continue without selfie
       }
 
@@ -267,7 +261,6 @@ const Attendance = () => {
         throw new Error(response.error?.message || 'Failed to clock out');
       }
     } catch (err) {
-      console.error('Clock out error:', err);
       setLocationError((err as Error).message);
     } finally {
       setIsClockingIn(false);

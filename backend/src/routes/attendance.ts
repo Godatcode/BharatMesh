@@ -35,7 +35,6 @@ async function validateGeofence(employeeId: string, latitude: number, longitude:
   try {
     const employee = await EmployeeModel.findOne({ employeeId });
     if (!employee) {
-      console.log('Employee not found, allowing clock-in for testing');
       return { valid: true, message: 'Employee not found - allowing for testing' };
     }
 
@@ -56,7 +55,6 @@ async function validateGeofence(employeeId: string, latitude: number, longitude:
         : `You are ${Math.round(distance)}m away from workplace (max: ${employee.geofence.radius}m)`
     };
   } catch (error) {
-    console.log('Geofence validation error, allowing for testing:', error);
     return { valid: true, message: 'Geofence validation failed - allowing for testing' };
   }
 }
@@ -124,7 +122,6 @@ router.post('/clock-in',
   authenticate,
   async (req: any, res: any) => {
     try {
-      console.log('Clock-in request body:', req.body);
       const { employeeId, location, selfie, notes } = req.body;
       
       // Basic validation
@@ -164,9 +161,7 @@ router.post('/clock-in',
       }
 
       // Validate geofence
-      console.log('Validating geofence for employee:', employeeId);
       const geofenceValidation = await validateGeofence(employeeId, location.latitude, location.longitude);
-      console.log('Geofence validation result:', geofenceValidation);
       
       if (!geofenceValidation.valid) {
         return res.status(400).json({
@@ -365,7 +360,6 @@ router.get('/stats', authenticate, async (req: any, res: any) => {
 // POST /api/attendance/create-test-employee - Create a test employee
 router.post('/create-test-employee', authenticate, async (req: any, res: any) => {
   try {
-    console.log('Creating test employee...');
     const testEmployee = new EmployeeModel({
       id: generateId(),
       name: 'John Doe',
@@ -393,9 +387,7 @@ router.post('/create-test-employee', authenticate, async (req: any, res: any) =>
       joinDate: '2024-01-01'
     });
 
-    console.log('Saving test employee...');
     const savedEmployee = await testEmployee.save();
-    console.log('Test employee saved successfully:', savedEmployee.id);
     
     res.json({
       success: true,
@@ -403,7 +395,6 @@ router.post('/create-test-employee', authenticate, async (req: any, res: any) =>
       message: 'Test employee created successfully'
     });
   } catch (error) {
-    console.error('Error creating test employee:', error);
     logger.error('Error creating test employee:', error);
     res.status(500).json({
       success: false,

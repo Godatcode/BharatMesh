@@ -41,7 +41,6 @@ function App() {
         
         setIsInitialized(true);
       } catch (error) {
-        console.error('Initialization error:', error);
         setIsInitialized(true); // Continue even if init fails
       }
     }

@@ -65,13 +65,11 @@ const Billing = () => {
       setLoading(true);
       setError(null);
       
-      console.log('🔄 Loading invoices from API...');
       
       // Try to load from API first
       const response = await billingApi.getInvoices();
       
       if (response.success) {
-        console.log('✅ Invoices loaded from API:', response.data.length);
         setInvoices(response.data);
         setFilteredInvoices(response.data);
         
@@ -81,7 +79,6 @@ const Billing = () => {
         throw new Error(response.error?.message || 'Failed to load invoices');
       }
     } catch (err) {
-      console.log('⚠️ API failed, loading from local storage:', err);
       setError('Using offline data - ' + (err as Error).message);
       
       // Fallback to local storage
@@ -94,11 +91,9 @@ const Billing = () => {
   const loadInvoicesFromLocal = async () => {
     try {
       const localInvoices = await db.invoices.toArray();
-      console.log('📱 Invoices loaded from local storage:', localInvoices.length);
       setInvoices(localInvoices);
       setFilteredInvoices(localInvoices);
     } catch (err) {
-      console.log('❌ Local storage failed, using mock data');
       // Final fallback to mock data
       loadMockInvoices();
     }
@@ -108,9 +103,7 @@ const Billing = () => {
     try {
       // Use bulkPut instead of bulkAdd to handle duplicates
       await db.invoices.bulkPut(invoices);
-      console.log('💾 Invoices saved to local storage');
     } catch (err) {
-      console.log('⚠️ Failed to save to local storage:', err);
     }
   };
 
@@ -154,12 +147,10 @@ const Billing = () => {
 
   const handleSaveInvoice = async (newInvoice: Invoice) => {
     try {
-      console.log('💾 Saving invoice:', newInvoice.id);
       
       const response = await billingApi.createInvoice(newInvoice);
       
       if (response.success) {
-        console.log('✅ Invoice saved successfully');
         setInvoices([response.data, ...invoices]);
         
         // Save to local storage for offline access
@@ -168,7 +159,6 @@ const Billing = () => {
         throw new Error(response.error?.message || 'Failed to save invoice');
       }
     } catch (err) {
-      console.log('⚠️ API failed, saving to offline queue:', err);
       
       // Save to offline queue for sync later
       await db.syncQueue.add({
@@ -202,7 +192,6 @@ const Billing = () => {
 
   const handlePrintInvoice = (invoice: Invoice) => {
     // In real app, implement thermal printer integration
-    console.log('Printing invoice:', invoice);
     alert('Print functionality will be implemented with thermal printer integration');
   };
 

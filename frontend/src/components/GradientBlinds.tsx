@@ -331,7 +331,6 @@ void main() {
         try {
           renderer.render({ scene: meshRef.current });
         } catch (e) {
-          console.error(e);
         }
       }
     };

@@ -65,7 +65,6 @@ router.post('/register',
       
       // Normalize phone number
       const normalizedPhone = normalizePhoneNumber(phone);
-      console.log('📱 Normalized phone:', phone, '→', normalizedPhone);
       
       // Check if user already exists
       const existingUser = await User.findOne({ phone: normalizedPhone });
@@ -147,7 +146,6 @@ router.post('/login',
       
       // Normalize phone number
       const normalizedPhone = normalizePhoneNumber(phone);
-      console.log('📱 Login - Normalized phone:', phone, '→', normalizedPhone);
       
       const user = await User.findOne({ phone: normalizedPhone, isActive: true });
       if (!user) {

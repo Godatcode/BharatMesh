@@ -84,15 +84,12 @@ const Login = () => {
     }
 
     // Send phone number as entered - backend will normalize it
-    console.log('🔍 Logging in with phone:', phone);
-    
     try {
       await login(phone, pin);
       // Store user ID for sync
       localStorage.setItem('userId', phone); // Temporary, will be replaced with actual user ID
       navigate('/');
     } catch (error) {
-      console.log('❌ Login failed:', error);
       // Error is handled by auth store
     }
   };
