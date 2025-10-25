@@ -135,7 +135,6 @@ const Dashboard = () => {
           }));
         }
       } catch (error) {
-        console.error('Failed to load stats:', error);
       } finally {
         setLoading(false);
       }

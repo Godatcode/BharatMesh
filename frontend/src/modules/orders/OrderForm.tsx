@@ -87,18 +87,15 @@ const OrderForm: React.FC<OrderFormProps> = ({ order, onSave, onClose }) => {
 
   const loadProducts = async () => {
     try {
-      console.log('🔄 Loading products for order form...');
       const response = await inventoryApi.getProducts();
       
       if (response.success) {
-        console.log('✅ Products loaded for order form:', response.data.length);
         setProducts(response.data);
         setFilteredProducts(response.data);
       } else {
         throw new Error(response.error?.message || 'Failed to load products');
       }
     } catch (err) {
-      console.log('⚠️ Failed to load products, using mock data:', err);
       // Fallback to mock products
       const mockProducts: Product[] = [
         { id: 'prod-1', name: 'Rice (1kg)', unitPrice: 50, unit: 'kg', stock: 25 },

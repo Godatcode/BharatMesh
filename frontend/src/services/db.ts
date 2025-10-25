@@ -40,9 +40,7 @@ export const db = new BharatMeshDB();
 export async function initializeDatabase(): Promise<void> {
   try {
     await db.open();
-    console.log('✅ IndexedDB initialized successfully');
   } catch (error) {
-    console.error('❌ IndexedDB initialization failed:', error);
     throw error;
   }
 }
@@ -54,7 +52,6 @@ export async function clearAllData(): Promise<void> {
   await db.transaction('rw', db.tables, async () => {
     await Promise.all(db.tables.map(table => table.clear()));
   });
-  console.log('🗑️ All local data cleared');
 }
 
 /**
@@ -96,6 +93,5 @@ export async function importDatabase(jsonData: string): Promise<void> {
     }
   });
   
-  console.log('✅ Database imported successfully');
 }
 

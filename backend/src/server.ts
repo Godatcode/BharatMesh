@@ -215,7 +215,6 @@ process.on('SIGINT', shutdown);
 // Start server
 async function startServer() {
   try {
-    console.log('🔄 Inside startServer() - about to call logger.info...');
     
     logger.info('🚀 Starting BharatMesh Server...', {
       env: config.server.env,
@@ -224,13 +223,11 @@ async function startServer() {
       mongoUri: config.database.mongoUri ? 'configured' : 'not configured'
     });
 
-    console.log('🔄 Logger.info called successfully, about to connect to MongoDB...');
 
     // Connect to MongoDB
     logger.info('📡 Connecting to MongoDB...');
     await connectDatabase();
     
-    console.log('🔄 MongoDB connected successfully, about to start HTTP server...');
     
     // Start HTTP server
     httpServer.listen(config.server.port, config.server.host, () => {
@@ -244,9 +241,6 @@ async function startServer() {
       logger.info(`🔌 Socket.io: ws://${config.server.host}:${config.server.port}`);
     });
   } catch (error) {
-    console.error('❌ Caught error in startServer():', error);
-    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error');
-    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     
     logger.error('❌ Failed to start server:', error);
     logger.error('Error details:', {
@@ -259,30 +253,20 @@ async function startServer() {
 
 // Start the server
 if (require.main === module) {
-  console.log('🚀 Starting BharatMesh Backend...');
-  console.log('📋 Environment:', process.env.NODE_ENV || 'development');
-  console.log('🔗 MongoDB URI:', process.env.MONGO_URI ? 'configured' : 'not configured');
-  console.log('🔑 JWT Secret:', process.env.JWT_SECRET ? 'configured' : 'not configured');
   
   // Add basic error handling for startup
   process.on('uncaughtException', (error) => {
-    console.error('❌ Uncaught Exception:', error);
-    console.error('❌ Stack:', error.stack);
     process.exit(1);
   });
 
   process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
     process.exit(1);
   });
 
-  console.log('🔄 About to call startServer()...');
   
   try {
     startServer();
   } catch (error) {
-    console.error('❌ Error in startServer():', error);
-    console.error('❌ Stack:', error instanceof Error ? error.stack : 'No stack trace');
     process.exit(1);
   }
 }

@@ -27,12 +27,10 @@ class SyncService {
     });
 
     this.socket.on('connect', () => {
-      console.log('🔌 Sync: Connected to server');
       this.registerDevice();
     });
 
     this.socket.on('disconnect', () => {
-      console.log('🔌 Sync: Disconnected from server');
     });
 
     this.socket.on('sync:operation', this.handleIncomingOperation.bind(this));
@@ -49,7 +47,6 @@ class SyncService {
         deviceId: this.deviceId,
         userId: this.userId
       });
-      console.log('📱 Device registered for sync');
     }
   }
 
@@ -75,10 +72,8 @@ class SyncService {
       }
 
       if (queuedOps.length > 0) {
-        console.log(`✅ Synced ${queuedOps.length} operations`);
       }
     } catch (error) {
-      console.error('Sync queue processing error:', error);
     }
   }
 
@@ -108,12 +103,10 @@ class SyncService {
   }
 
   private async handleIncomingOperation(data: SyncOperation): Promise<void> {
-    console.log('📥 Incoming sync operation:', data.collection, data.operation);
 
     try {
       const table = (db as any)[data.collection];
       if (!table) {
-        console.warn('Unknown collection:', data.collection);
         return;
       }
 
@@ -129,20 +122,16 @@ class SyncService {
           break;
       }
 
-      console.log('✅ Applied incoming operation:', data.id);
     } catch (error) {
-      console.error('Failed to apply operation:', error);
       // TODO: Queue for conflict resolution
     }
   }
 
   private handleConflict(data: any): void {
-    console.warn('⚠️ Sync conflict detected:', data);
     // TODO: Implement conflict resolution UI
   }
 
   private handlePeerDiscovered(data: any): void {
-    console.log('👋 Peer discovered:', data.deviceId);
     // TODO: Establish WebRTC connection for direct P2P sync
   }
 
@@ -164,7 +153,6 @@ export async function initializeSync(): Promise<void> {
   const userId = localStorage.getItem('userId');
 
   if (!userId) {
-    console.warn('Cannot initialize sync: no user ID');
     return;
   }
 

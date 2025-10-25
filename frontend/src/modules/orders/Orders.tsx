@@ -98,13 +98,11 @@ const Orders = () => {
       setLoading(true);
       setError(null);
       
-      console.log('🔄 Loading orders from API...');
       
       // Try to load from API first
       const response = await ordersApi.getOrders();
       
       if (response.success) {
-        console.log('✅ Orders loaded from API:', response.data.length);
         // Convert _id to id for IndexedDB compatibility
         const ordersWithId = response.data.map((order: any) => ({
           ...order,
@@ -119,7 +117,6 @@ const Orders = () => {
         throw new Error(response.error?.message || 'Failed to load orders');
       }
     } catch (err) {
-      console.log('⚠️ API failed, loading from local storage:', err);
       setError('Using offline data - ' + (err as Error).message);
       
       // Fallback to local storage
@@ -132,11 +129,9 @@ const Orders = () => {
   const loadOrdersFromLocal = async () => {
     try {
       const localOrders = await db.orders.toArray();
-      console.log('📱 Orders loaded from local storage:', localOrders.length);
       setOrders(localOrders);
       setFilteredOrders(localOrders);
     } catch (err) {
-      console.log('❌ Local storage failed, using mock data');
       // Final fallback to mock data
       loadMockOrders();
     }
@@ -146,9 +141,7 @@ const Orders = () => {
     try {
       // Use bulkPut instead of bulkAdd to handle duplicates
       await db.orders.bulkPut(orders);
-      console.log('💾 Orders saved to local storage');
     } catch (err) {
-      console.log('⚠️ Failed to save to local storage:', err);
     }
   };
 
@@ -207,7 +200,6 @@ const Orders = () => {
 
   const handleSaveOrder = async (order: Order) => {
     try {
-      console.log('💾 Saving order:', order.id);
       
       let response: any;
       if (selectedOrder) {
@@ -232,12 +224,10 @@ const Orders = () => {
         };
         // Save to local storage for offline access
         await db.orders.put(orderWithId);
-        console.log('✅ Order saved successfully');
       } else {
         throw new Error(response.error?.message || 'Failed to save order');
       }
     } catch (err) {
-      console.log('⚠️ API failed, saving to offline queue:', err);
       
       // Save to offline queue for sync later
       await db.syncQueue.add({

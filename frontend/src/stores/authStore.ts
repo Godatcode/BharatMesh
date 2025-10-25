@@ -34,11 +34,9 @@ export const useAuthStore = create<AuthState>()(
       error: null,
 
       login: async (phone: string, pin: string) => {
-        console.log('🔐 AuthStore: Starting login for phone:', phone);
         set({ isLoading: true, error: null });
         try {
           const response = await authApi.login(phone, pin);
-          console.log('📡 AuthStore: API response:', response);
           
           if (response.success && response.data) {
             const { user, tokens } = response.data;
@@ -59,9 +57,7 @@ export const useAuthStore = create<AuthState>()(
             throw new Error(response.error?.message || 'Login failed');
           }
         } catch (error: any) {
-          console.log('❌ AuthStore: Login error:', error);
           const errorMessage = error.response?.data?.error?.message || error.message || 'Login failed';
-          console.log('❌ AuthStore: Error message:', errorMessage);
           set({ 
             isLoading: false, 
             error: errorMessage,
@@ -120,7 +116,6 @@ export const useAuthStore = create<AuthState>()(
               get().logout();
             }
           } catch (error) {
-            console.log('Auth initialization failed, clearing tokens:', error);
             get().logout();
           }
         }

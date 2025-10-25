@@ -11,12 +11,10 @@ export function useNetworkStatus() {
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      console.log('📶 Network: Online');
     };
 
     const handleOffline = () => {
       setIsOnline(false);
-      console.log('📵 Network: Offline');
     };
 
     const updateConnectionType = () => {
